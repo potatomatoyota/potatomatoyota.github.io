@@ -14,7 +14,64 @@
     <h2><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">三明治</a><h2>
     <hr>
     <iframe width="1280" height="720" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<pre> 
+    <code>
+        def str_to_array(x):
+    arr=x.strip().split(" ")
+    int_arr=[int(a) for a in arr]
+    return int_arr
+def rank(i):
+    if i >= 90:
+        return"優"
+    elif i >= 80:
+        return"甲"
+    elif i >= 70:
+        return"乙"
+    elif i >= 60:
+        return"丙"
+    else:
+        return"丁"
+sum=lambda i:eval(i.strip().replace(" ","+"))
+time=int(input())
+sum_array,failed_array,highest_score_array=[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]
+print("座號 國文 英文 數學 自然 社會 總分 平均 等第 不及格科數")
+for  now_main in range(time):
+
+    string=input().strip()
+    failed=0
+    int_array=str_to_array(string)
     
+
+    for now in range(5):
+
+        sum_array[now]+=int_array[now]
+        
+        if int_array[now]<60:
+
+            failed+=1
+            failed_array[now]+=1
+
+        if int_array[now]>highest_score_array[now]:
+
+            highest_score_array[now]=int_array[now]
+
+    print(now_main+1,string,sum(string),'{:g}'.format (sum(string)/5),rank(sum(string)/5),failed)
+print("平均 ",end="")
+for now in sum_array:
+    print(round(float('{:g}'.format (now/time)),1),"",end="")
+print("")
+print("不及格人數 ",end="")
+for now in failed_array:
+    print(now,"",end="")
+print("")
+print("最高分 ",end="")
+for now in highest_score_array:
+    print(now,"",end="")
+    
+    
+    </code>
+</pre>
+        
 </body>
 </html>
 
