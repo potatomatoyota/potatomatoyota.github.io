@@ -1,2 +1,12 @@
-#header{color:#ffffff;text-align:center;font-size:70px;border-style:double;border-radius: 30px 20px;}
-body{background-color:#b0c4de;}
+#header{
+
+color:#ffffff;text-align:center;
+font-size:70px;
+border-style:double;
+border-radius: 30px 20px;
+margin:10px 5px;
+line-height:5%;
+background-color: #3B4252;
+
+}
+body{background-color:#2E3440;}
