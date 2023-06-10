@@ -12,9 +12,10 @@ background-color: #2c2c2c;
 body{background-color:#1a1a1a;}
 .card{
     color:#ffffff;
+    border-radius:10px 20px;
     text-align:center;
     background-color: #2c2c2c;
-    border-style: ridge;
+    border-style:dashed;
     margin: 10px 5px;
 
 
