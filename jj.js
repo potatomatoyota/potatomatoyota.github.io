@@ -1,0 +1,4 @@
+postTelegram = function()
+{
+    alert( "message" );
+}
