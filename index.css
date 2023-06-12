@@ -22,7 +22,7 @@ background-color:#1a1a1a;
 
 
 }
-img,{
-max-wigth：100%；
-display:block;
+img{
+    max-width:100%;
+display: block
 }
