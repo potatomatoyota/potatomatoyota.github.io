@@ -22,7 +22,8 @@ background-color:#1a1a1a;
 
 
 }
-img{
+img,
+iframe{
     max-width:100%;
     display: block
 }
