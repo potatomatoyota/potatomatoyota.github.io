@@ -1,0 +1,1 @@
+沒人會發現我不會寫javascript
