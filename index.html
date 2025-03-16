@@ -14,6 +14,7 @@
             background-color: #f9f9f9;
             color: #333;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
         h1 {
             text-align: center;
@@ -23,6 +24,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 60px; /* 下移矩形位置，避免與按鈕重疊 */
         }
         .dark-mode {
             background-color: #333;
@@ -42,21 +44,40 @@
             border: none;
             cursor: pointer;
             font-size: 24px;
-            z-index: 1000;
         }
-        @media (max-width: 600px) {
-            .toggle-button {
-                top: 15px;
-                left: 15px;
-                width: 50px;
-                height: 50px;
-                font-size: 28px;
-            }
+        .avatar {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .author-info {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 200px;
+        }
+        .dark-mode .author-info {
+            background: #444;
+            color: #f9f9f9;
         }
     </style>
 </head>
 <body>
     <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
+    <img src="avatar.jpg" alt="大頭" class="avatar" onclick="toggleAuthorInfo()">
+    <div class="author-info" id="author-info">
+        <p><strong>作者：</strong>某某人</p>
+        <p>這裡是作者的簡介，可以介紹他的背景和經歷。</p>
+    </div>
     <div class="article">
         <h1>文章標題</h1>
         <p>這裡是您的文章內容。您可以在這裡放置您的文字，圖片，或其他內容。</p>
@@ -64,6 +85,10 @@
     <script>
         function toggleDarkMode() {
             document.body.classList.toggle('dark-mode');
+        }
+        function toggleAuthorInfo() {
+            const info = document.getElementById('author-info');
+            info.style.display = info.style.display === 'block' ? 'none' : 'block';
         }
     </script>
 </body>
