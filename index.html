@@ -1,34 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="https://imgur.com/ogT4CTh.png">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <title>線上登記</title>
+    <title>文章頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            text-align: center;
+        }
+        .article {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .dark-mode {
+            background-color: #333;
+            color: #f9f9f9;
+        }
+        .dark-mode .article {
+            background: #444;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+        .toggle-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 1000;
+        }
+        @media (max-width: 600px) {
+            .toggle-button {
+                top: 15px;
+                left: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 <body>
-    
-    <div class="box">
-        <form action="https://api.telegram.org/bot2128720523:AAEZcag8nvamemHGkSTaaRjatrpZbmOGSNk/sendMessage" target="_blank">
-            <input type="text"name="text" >
-            <input type="hidden" name="chat_id" value="1138553283">
-            
-            <button>提交</button>
-        </form>
+    <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
+    <div class="article">
+        <h1>文章標題</h1>
+        <p>這裡是您的文章內容。您可以在這裡放置您的文字，圖片，或其他內容。</p>
     </div>
-    
-    <div>
-        <form>
-        <input class="bottom" type="button" value="檢查滑鼠左鍵" onclick=window.alert("恭喜,您的滑鼠左鍵未損壞")>
-        </form>
-    </div>
-
-    
-    
-
-    
-        
-    
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
 </body>
 </html>
