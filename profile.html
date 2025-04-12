@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>個人頁 - PotatoMatoyota</title>
+  <link rel="icon" href="img/Favicon.png" type="image/x-icon" />
+
+
+  <script>
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Microsoft JhengHei', sans-serif;
+      transition: background-color 0.4s, color 0.4s;
+    }
+
+    body {
+      background: linear-gradient(to bottom, #fdfdfd, #eaeaea);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      animation: fadeInUp 0.6s ease both;
+    }
+
+    @keyframes fadeInUp {
+      0% { transform: translateY(40px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .avatar-wrapper {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      padding: 5px;
+      margin: 0 auto 20px;
+      background: linear-gradient(135deg, #ccc, #aaa);
+      transition: background 0.5s, box-shadow 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-wrapper.playing {
+      background: linear-gradient(135deg, #48ff91, #2ac770);
+      box-shadow: 0 0 15px #2ac770;
+    }
+
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    h1 {
+      font-size: 2.4em;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.2em;
+      line-height: 1.8;
+      margin-bottom: 25px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .actions a {
+      text-decoration: none;
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .actions a:hover {
+      background: #555;
+    }
+
+    .toggle-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 42px;
+      height: 42px;
+      font-size: 18px;
+      border-radius: 50%;
+      border: none;
+      background: #ddd;
+      cursor: pointer;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .now-playing {
+      margin-top: 20px;
+      font-size: 0.95em;
+      color: #666;
+    }
+
+    .now-playing a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+
+    .now-playing a:hover {
+      text-decoration: underline;
+    }
+
+    /* 深色模式樣式 */
+    html.dark-mode body {
+      background: linear-gradient(to bottom, #1a1a1a, #2a2a2a);
+      color: #f5f5f5;
+    }
+
+    html.dark-mode .container {
+      background: #2f2f2f;
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+    }
+
+    html.dark-mode .actions a {
+      background: #444;
+      color: #f5f5f5;
+    }
+
+    html.dark-mode .actions a:hover {
+      background: #666;
+    }
+
+    html.dark-mode .toggle-button {
+      background: #444;
+      color: #fff;
+    }
+
+    html.dark-mode .now-playing {
+      color: #aaa;
+    }
+
+    html.dark-mode .now-playing a {
+      color: #66ccff;
+    }
+  </style>
+</head>
+
+<body>
+  <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
+
+  <div class="container">
+    <div class="avatar-wrapper" id="avatarRing">
+      <img src="img/avatar.jpg" alt="大頭貼" class="avatar" />
+    </div>
+    <h1>PotatoMatoyota</h1>
+    <p>擺弄下流淌🤮出的無聲🤫之音🎶
+        已捨棄🗑️一切名字🪪
+        你的模糊身影👥正在哭泣😢
+        can not🚫can not🚫not❌ not⛔ not🈲 deny😔↔️
+        毫無疑問🙂‍↕️的真實🩻
+        來吧🤗 委身於我🤴
+        有如回歸初始🐒般
+        能量🔋正在循環🔄
+        沒錯  此刻重力⤵️不復存在🈚
+        象徵性🐘的遊行🚩🙍‍♂️🙍‍♀️🙍‍♂️🙎‍♂️🙎‍♀️🙎
+        在這月夜🌛抬頭仰望🙄吧
+        'completeness🈵'
+        啊 高舉🙋‍♂️生命❣️之燈火🏮
+        殺戮🔪之吻💋  招弟👶
+        殺戮🔪之吻💋  豬肚🐷
+        殺戮🔪之吻💋  揪打🐣
+        偽裝🥷欺騙🍕🍕🍕🍕🍕🍕🍕
+        奪命☠️之吻👄  招弟👼
+        奪命☠️之吻👄  豬肚🐖
+        奪命☠️之吻👄  揪打🐥
+        緊👮‍♂️緊👮‍♂️擁抱🫂
+        吶🧂 還真是毫無防備🪤啊
+        在這美麗💅的遊戲🎮中
+        人們👤開始逐漸崩壞🤪
+        多麼可笑啊🤭。</p>
+    <div class="actions">
+      <a href="index.html">🏠 回首頁</a>
+      <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">📧 聯絡我</a>
+    </div>
+    <div class="now-playing" id="nowPlaying">正在載入最近的音樂…</div>
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark-mode');
+      const isDark = html.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDark);
+      document.querySelector('.toggle-button').textContent = isDark ? '☀️' : '🌙';
+    }
+
+    async function fetchNowPlaying() {
+      const url = 'https://lastfm-last-played.biancarosa.com.br/potatomatoyota/latest-song';
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const track = data.track;
+        const isPlaying = track['@attr'] && track['@attr'].nowplaying === 'true';
+        const title = track.name;
+        const artist = track.artist['#text'];
+        const link = track.url;
+
+        const display = isPlaying
+          ? `🎵 正在聽：<a href="${link}" target="_blank">${artist} - ${title}</a>`
+          : `🎵 剛聽：<a href="${link}" target="_blank">${artist} - ${title}</a>`;
+
+        document.getElementById('nowPlaying').innerHTML = display;
+
+        
+        const avatarRing = document.getElementById('avatarRing');
+        if (isPlaying) {
+          avatarRing.classList.add('playing');
+        } else {
+          avatarRing.classList.remove('playing');
+        }
+
+      } catch (err) {
+        document.getElementById('nowPlaying').textContent = '無法載入音樂資訊';
+      }
+    }
+
+    window.onload = () => {
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      document.querySelector('.toggle-button').textContent = isDark ? '☀️' : '🌙';
+      document.body.style.opacity = '1';
+      fetchNowPlaying();
+    };
+  </script>
+</body>
+</html>
