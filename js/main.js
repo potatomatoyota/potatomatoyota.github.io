@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', function() {
   setupContactButton();
   setupVideoModal();
   
-  // 設置定期刷新音樂資訊 (每60秒刷新一次)
-  setInterval(loadMusicInfo, 60000);
+  // 設置定期刷新音樂資訊 (每15秒刷新一次)
+  setInterval(loadMusicInfo, 15000);
 });
 
 // 初始化主題設置
