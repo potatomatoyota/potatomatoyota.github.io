@@ -482,7 +482,7 @@ hr {
   color: var(--link-hover);
 }
 
-/* 隱藏元素 */
+
 .hidden {
   display: none;
 }
