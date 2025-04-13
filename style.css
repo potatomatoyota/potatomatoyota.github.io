@@ -494,7 +494,25 @@ html.dark-mode hr {
   margin-top: 0.5em;
 }
 
+.highlight-link {
+  color: #0077cc; 
+  font-weight: bold;
+  text-decoration: none
+  
+}
+.highlight-link:hover {
+  color: #0095ff;
+}
+
 html.dark-mode .article figcaption {
   color: #aaa;
 }
+html.dark-mode .highlight-link {
+  color: #dc8d33;
+  text-decoration: none
+}
+html.dark-mode .highlight-link:hover  {
+  color: #dba41a;
+}
+
 

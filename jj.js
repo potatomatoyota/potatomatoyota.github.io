@@ -12,7 +12,7 @@ let currentAlbum = '';
   
   window.onload = () => {
     const isDark = localStorage.getItem('darkMode') === 'true';
-    document.querySelector('.toggle-button').textContent = isDark ? '☀️' : '🌙';
+    document.querySelector('.toggle-button').textContent = isDark ? '🌙' : '☀️';
     document.body.style.opacity = '1';
   
     if (document.getElementById('avatarContainer')) {
@@ -30,7 +30,7 @@ let currentAlbum = '';
     document.documentElement.classList.toggle('dark-mode');
     const isDark = document.documentElement.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDark);
-    document.querySelector('.toggle-button').textContent = isDark ? '☀️' : '🌙';
+    document.querySelector('.toggle-button').textContent = isDark ? '🌙' : '☀️';
     document.documentElement.style.backgroundColor = isDark ? '#212121' : '';
   }
   
