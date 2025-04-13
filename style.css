@@ -1,10 +1,500 @@
-body{
-  background:#2c2c2c;
+/* 基礎元素樣式 */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
 }
-.box{
-  size: 50px;
-  margin-left: 50%;
-  margin-top: 25%;
-  width:25%;
-  height:25%;
+
+html, body {
+  height: 100%;
+  transition: background-color 0.3s, color 0.3s, opacity 0.5s ease-in-out;
 }
+
+body {
+  font-family: "Microsoft JhengHei", Arial, sans-serif;
+  font-size: 20px;
+  line-height: 1.85;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 100px 20px 40px;
+  background-color: #f9f9f9;
+  color: #333;
+  opacity: 0;
+}
+
+/* 標題樣式 */
+h1 {
+  text-align: center;
+  font-size: 2.8em;
+  margin-bottom: 40px;
+  color: inherit;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 1.6em;
+  margin-top: 0; /* 減少標題上方空間 */
+  margin-bottom: 0.5em; /* 減少標題下方空間 */
+  font-weight: bold;
+  color: #222;
+}
+
+h3 {
+  font-size: 1.3em;
+  margin-top: 1em; /* 減少標題上方空間 */
+  margin-bottom: 0.5em; /* 減少標題下方空間 */
+  font-weight: bold;
+  color: #333;
+}
+
+p {
+  margin-bottom: 0.8em; /* 減少段落之間的空間 */
+  line-height: 1.5; /* 減少行間距 */
+}
+
+/* 深色模式 */
+html.dark-mode body {
+  background-color: #212121;
+  color: #f0f0f0;
+}
+
+html.dark-mode h1,
+html.dark-mode h2,
+html.dark-mode h3 {
+  color: #eee;
+}
+
+html.dark-mode h2 {
+  color: #ccc;
+}
+
+/* 統一頂部長條樣式 */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(to bottom, #fdfdfd, #f5f5f5);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 990;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  justify-content: space-between;
+}
+
+/* 統一深色模式下的頂部長條 */
+html.dark-mode .top-bar {
+  background: linear-gradient(to bottom, #212121, #1a1a1a);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 統一深色模式切換按鈕 */
+.toggle-button {
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+  border-radius: 50%;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  margin-left: 10px;
+}
+
+html.dark-mode .toggle-button {
+  background: #444;
+  color: #fff;
+}
+
+/* 統一頭像容器樣式 */
+.avatar-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.avatar-wrapper:hover {
+  transform: scale(1.05);
+}
+
+/* 統一頭像圖片樣式 */
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 為主體內容增加頂部邊距，避免被頂部長條遮擋 */
+body {
+  padding-top: 80px;
+}
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.6); }
+  70% { box-shadow: 0 0 12px 10px rgba(0, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+}
+
+
+.article {
+  background: #fff;
+  padding: 18px; /* 減少內邊距 */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px; /* 減少上邊距 */
+  transition: background 0.3s, transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  animation: slideIn 0.6s ease-out both;
+  animation-delay: calc(var(--index, 0) * 0.1s);
+}
+
+html.dark-mode .article {
+  background: #2f2f2f;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.article-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.article h2 {
+  font-size: 1.4em; 
+  margin-bottom: 8px;
+}
+
+.article p {
+  margin-bottom: 0; 
+  font-size: 0.95em; 
+}
+
+/* 音樂卡片 */
+.music-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  color: inherit;
+  animation: slideIn 0.6s ease-out both;
+}
+
+html.dark-mode .music-card {
+  background: #2f2f2f;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* 滑鼠懸停時的上移動畫 */
+.article, .music-card {
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+.article-link:hover .article,
+#music-link:hover .music-card {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-mode .article-link:hover .article,
+html.dark-mode #music-link:hover .music-card {
+  box-shadow: 0 12px 24px rgba(255, 255, 255, 0.12);
+}
+
+#music-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s;
+}
+
+.music-cover {
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.music-info {
+  flex: 1;
+}
+
+.music-meta {
+  display: flex;
+  align-items: center; /* 添加垂直居中對齊 */
+  gap: 8px;
+  font-size: 0.95em;
+  margin-top: 4px;
+  color: #666;
+}
+.music-meta div {
+  cursor: pointer;
+}
+
+html.dark-mode .music-meta {
+  color: #aaa;
+}
+
+.music-title {
+  font-weight: bold;
+  margin-bottom: -5px;
+}
+/*音樂卡片資訊*/
+.music-album, .music-artist {
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+
+.music-album:hover, .music-artist:hover {
+  text-decoration: underline;
+}
+
+html.dark-mode .music-album, html.dark-mode .music-artist {
+  color: #bbb;
+}
+
+.music-status {
+  font-size: 0.9em;
+  color: #888;
+}
+
+html.dark-mode .music-status {
+  color: #aaa;
+}
+
+/* 文章列表容器 */
+#articles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* 設定卡片之間的間距 */
+}
+
+/* 個人頁樣式 */
+.container {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  animation: fadeInUp 0.6s ease both;
+  margin-top: 30px;
+}
+
+html.dark-mode .container {
+  background: #2f2f2f;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeInUp {
+  0% { transform: translateY(40px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* 個人頁頭像 */
+.container .avatar-wrapper {
+  position: static;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  padding: 5px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #ccc, #aaa);
+  transition: background 0.5s, box-shadow 0.5s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container .avatar-wrapper.playing {
+  background: linear-gradient(135deg, #48ff91, #2ac770);
+  box-shadow: 0 0 15px #2ac770;
+}
+
+.container .avatar {
+  width: 120px;
+  height: 120px;
+}
+
+/* 個人頁按鈕 */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.actions a, .actions button {
+  text-decoration: none;
+  padding: 10px 20px;
+  background: #333;
+  color: white;
+  border-radius: 8px;
+  transition: background 0.3s;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.actions a:hover, .actions button:hover { background: #555; }
+
+html.dark-mode .actions a, html.dark-mode .actions button { background: #444; color: #f5f5f5; }
+html.dark-mode .actions a:hover, html.dark-mode .actions button:hover { background: #666; }
+
+/* lastfm */
+.now-playing { margin-top: 20px; font-size: 0.95em; color: #666; }
+.now-playing a { color: #0077cc; text-decoration: none; }
+.now-playing a:hover { text-decoration: underline; }
+
+html.dark-mode .now-playing { color: #aaa; }
+html.dark-mode .now-playing a { color: #66ccff; }
+
+
+#videoModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+}
+
+#localVideo {
+  width: 90%;
+  max-width: 600px;
+  height: auto; 
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  animation: zoomIn 0.4s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+/* 回首頁連結 */
+a.back-link {
+  display: inline-block;
+  margin-top: 40px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+a.back-link:hover {
+  text-decoration: underline;
+  color: #0077cc;
+}
+
+html.dark-mode a.back-link {
+  color: #ccc;
+}
+
+html.dark-mode a.back-link:hover {
+  color: #66ccff;
+}
+
+/* 動畫效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 響應式設計 */
+@media screen and (max-width: 768px) {
+  body {
+    padding-top: 100px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  h1 {
+    font-size: 2.4em;
+  }
+  
+  .article {
+    padding: 15px;
+  }
+}
+ul {
+  padding-left: 1.5em;
+  margin-bottom: 1.5em;
+  list-style-type: disc;
+}
+
+li {
+  margin-bottom: 0.4em;
+}
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, #ccc, #eee, #ccc);
+  margin: 2em 0;
+}
+html.dark-mode hr {
+  background: linear-gradient(to right, #444, #666, #444);
+}
+
+
+.article img {
+  
+  border-radius: 12px;
+  margin: 1.5em 0;
+}
+.article figcaption {
+  text-align: center;
+  font-size: 0.95em;
+  color: #666;
+  margin-top: 0.5em;
+}
+
+html.dark-mode .article figcaption {
+  color: #aaa;
+}
+

@@ -1,276 +1,75 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<script>
-  if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark-mode');
-  }
-</script>
 <head>
+ 
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>我想睡覺</title>
   <link rel="icon" href="img/Favicon.png" type="image/x-icon" />
-  <style>
-    * {
-      box-sizing: border-box;
+  
+  <!-- 防止閃白 -->
+  <script>
+    
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+      document.documentElement.classList.add('dark-mode');
+      document.documentElement.style.backgroundColor = '#212121';
     }
-
-    body {
-      font-family: "Microsoft JhengHei", Arial, sans-serif;
-      line-height: 1.8;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: #f9f9f9;
-      color: #333;
-      opacity: 0;
-      animation: fadeIn 0.8s ease forwards;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 4em;
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
-    }
-
-    html.dark-mode body {
-      background-color: #212121;
-      color: #f9f9f9;
-    }
-
-    .article {
-      background: #fff;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-      margin-top: 40px;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .article-link {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-    }
-
-    .article-link:hover .article {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    p {
-      margin-bottom: 10px;
-      font-size: 1.5em;
-    }
-
-    .toggle-button {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      width: 40px;
-      height: 40px;
-      background: #ddd;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
-      transition: background 0.3s;
-      z-index: 100;
-    }
-
-    html.dark-mode .toggle-button {
-      background: #444;
-      color: #fff;
-    }
-
-    .avatar-wrapper {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.6);
-      transition: box-shadow 0.4s ease-in-out;
-    }
-
-    .avatar {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    .avatar-wrapper.playing {
-        box-shadow: 0 0 8px 4px rgba(0, 255, 255, 0.6);
-        animation: pulseRing 1.5s infinite ease-in-out;
-    }
-
-    @keyframes pulseRing {
-      0% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.6);
-      }
-      70% {
-        box-shadow: 0 0 12px 10px rgba(0, 255, 255, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
-      }
-    }
-
-    /* 音樂卡片 */
-    .music-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: #fff;
-      padding: 16px;
-      border-radius: 16px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-      margin-top: 20px;
-      animation: slideUp 0.6s ease-out both;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .music-cover {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
-      object-fit: cover;
-    }
-
-    .music-info a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .music-title {
-      font-weight: bold;
-      font-size: 1.2em;
-    }
-
-    .music-status {
-      font-size: 0.9em;
-      color: #888;
-    }
-
-    html.dark-mode .article {
-      background: #2f2f2f;
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.08);
-    }
-
-    html.dark-mode .music-card {
-      background: #2f2f2f;
-      box-shadow: 0 4px 12px rgba(255,255,255,0.05);
-    }
-
-    html.dark-mode .music-status {
-      color: #aaa;
-    }
-  </style>
+  </script>
+  
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
-  <div id="avatarContainer" class="avatar-wrapper">
-    <img src="img/avatar.jpg" alt="大頭" class="avatar" onclick="goToProfile()">
-  </div>
 
-  <div id="music" class="music-card" style="display: none;">
-    <img id="cover" class="music-cover" src="" alt="封面">
-    <div class="music-info">
-      <div class="music-title"><a id="track-link" href="#" target="_blank"><span id="track-name"></span> - <span id="artist-name"></span></a></div>
-      <div class="music-status" id="track-status">🎧 正在播放</div>
+<body>
+ 
+  <div class="top-bar">
+    <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
+    <div id="avatarContainer" class="avatar-wrapper">
+      <img src="img/avatar.jpg" alt="大頭" class="avatar" onclick="goToProfile()">
     </div>
   </div>
 
+  <a id="music-link" href="#" target="_blank" style="display: none;">
+    <div id="music" class="music-card">
+      <img id="cover" class="music-cover" src="" alt="封面">
+      <div class="music-info">
+        <div class="music-title">
+          <span id="track-name">歌曲名稱</span>
+        </div>
+
+          <div class="music-meta">
+            <div class="music-artist" id="artist-name" onclick="goToArtist(event)">藝人</div>
+            <span>-</span>
+            <div class="music-album" id="album-name" onclick="goToAlbum(event)">專輯名稱</div>
+          </div>
+
+        <div class="music-status" id="track-status">🎧 正在播放</div>
+      </div>
+    </div>
+  </a>
+
   <div id="articles">
     <a href="article/article1.html" class="article-link">
-      <section class="article">
-        <h2>114514</h2>
-        <p>114514 </p>
+      <section class="article" style="--index: 0;">
+        <h2>花木蘭影評</h2>
+        <p>把這個放這裡只是為了撐一下版面</p>
       </section>
     </a>
-    <a href="article2.html" class="article-link">
-      <section class="article">
-        <h2>1919810</h2>
-        <p>我測你媽。</p>
+    <a href="article/article2.html" class="article-link">
+      <section class="article" style="--index: 1;">
+        <h2>Muse - Origin of Symmetry</h2>
+        <p>我承認我聽 Will Of The People 聽笑了，什麼破爛玩意</p>
       </section>
     </a>
-    <a href="article3.html" class="article-link">
-      <section class="article">
-        <h2>1245</h2>
-        <p>可是關係變成沒關係。</p>
+    <a href="article/article3.html" class="article-link">
+      <section class="article" style="--index: 2;">
+        <h2>我做不完報告</h2>
+        <p>我也不想在這裡</p>
       </section>
     </a>
   </div>
-
-  <script>
-    function toggleDarkMode() {
-      document.documentElement.classList.toggle('dark-mode');
-      const isDark = document.documentElement.classList.contains('dark-mode');
-      localStorage.setItem('darkMode', isDark);
-      document.querySelector('.toggle-button').textContent = isDark ? '☀️' : '🌙';
-    }
-
-    function goToProfile() {
-      window.location.href = 'profile.html';
-    }
-
-    window.onload = function () {
-      const isDark = localStorage.getItem('darkMode') === 'true';
-      if (isDark) {
-        document.documentElement.classList.add('dark-mode');
-        document.querySelector('.toggle-button').textContent = '☀️';
-      } else {
-        document.querySelector('.toggle-button').textContent = '🌙';
-      }
-      fetchLatestTrack();
-    };
-
-    function fetchLatestTrack() {
-      fetch("https://lastfm-last-played.biancarosa.com.br/potatomatoyota/latest-song")
-        .then(res => res.json())
-        .then(data => {
-          const track = data.track;
-          if (!track) return;
-
-          document.getElementById('track-name').textContent = track.name;
-          document.getElementById('artist-name').textContent = track.artist['#text'];
-          document.getElementById('cover').src = track.image?.[3]?.['#text'] || '';
-          document.getElementById('track-link').href = track.url;
-          const nowPlaying = track['@attr']?.nowplaying === "true";
-          document.getElementById('track-status').textContent = nowPlaying
-            ? "🎧 介紹歸介紹，我其實正在聽這個"
-            : "🕒 國文課阻止我聽這歌了";
-          document.getElementById('music').style.display = 'flex';
-
-          // 頭像外圍圓環效果
-          const avatar = document.getElementById('avatarContainer');
-          avatar.classList.toggle('playing', nowPlaying);
-        })
-        .catch(err => console.error("載入歌曲失敗：", err));
-    }
-  </script>
+  
+  <script src="jj.js"></script>
+  
 </body>
 </html>
