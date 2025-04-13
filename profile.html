@@ -11,6 +11,63 @@
   <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
   <script src="js/theme-loader.js"></script>
+  <style>
+    /* 行動裝置專用的內嵌樣式 */
+    @media screen and (max-width: 480px) {
+      /* 更適合手機的容器樣式 */
+      .profile-container {
+        padding: 25px 20px;
+        margin-top: 20px;
+      }
+      
+      h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+      }
+      
+     
+      .profile-avatar-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .profile-avatar {
+        width: 90px;
+        height: 90px;
+      }
+      
+      
+      .actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+      }
+      
+      .action-btn {
+        width: 100%;
+        padding: 12px 10px;
+        font-size: 0.95em;
+      }
+      
+      /* 頂部欄調整 */
+      .top-bar {
+        height: 50px;
+        padding: 0 15px;
+      }
+      
+      
+      #localVideo {
+        width: 95%;
+      }
+      
+      
+      .now-playing {
+        padding: 0 10px;
+        font-size: 0.9em;
+        line-height: 1.4;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -40,7 +97,7 @@
 
   <div id="videoModal" class="modal" aria-hidden="true">
     <button class="close-button" id="closeModal" aria-label="關閉">✕</button>
-    <video id="localVideo" controls>
+    <video id="localVideo" controls playsinline>
       <source src="Rick Astley - Never Gonna Give You Up .mp4" type="video/mp4">
       您的瀏覽器不支援 HTML5 播放本地影片。
     </video>
