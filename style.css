@@ -516,28 +516,34 @@ hr {
     padding: 15px;
   }
   
+  
   .music-card {
-    flex-direction: column;
-    text-align: center;
+    
+    padding: 12px;
+    gap: 12px;
   }
   
   .music-cover {
-    width: 150px;
-    height: 150px;
-    margin: 0 auto;
+   
+    width: 80px;
+    height: 80px;
+  }
+  
+ 
+  .music-title {
+    font-size: 0.95em;
+  }
+  
+  .music-album, .music-artist {
+    font-size: 0.75em;
+  }
+  
+  .music-status {
+    font-size: 0.8em;
   }
   
   .actions {
     flex-direction: column;
     gap: 12px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
