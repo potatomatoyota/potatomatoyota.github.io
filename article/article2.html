@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Muse - Origin of Symmetry</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="我做不完報告的文章">
+  <title>我做不完報告</title>
   
-  <link rel="icon" href="/img/Favicon.png" type="image/x-icon" />
+  <link rel="icon" href="../img/Favicon.png" type="image/x-icon">
 
-  
+  <!-- 防止閃白 -->
   <script>
     const darkMode = localStorage.getItem('darkMode') === 'true';
     if (darkMode) {
@@ -16,18 +17,20 @@
     }
   </script>
 
-  
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <div class="top-bar">
-    <button class="toggle-button" onclick="toggleDarkMode()">🌙</button>
+  <header class="top-bar">
+    <button class="toggle-button" id="themeToggle" aria-label="切換深淺色模式">🌙</button>
     <div id="avatarContainer" class="avatar-wrapper">
-      <img src="../img\avatar.jpg" alt="大頭" class="avatar" onclick="goToProfile()">
+      <a href="../profile.html" aria-label="前往個人頁面">
+        <img src="../img/avatar.jpg" alt="個人頭像" class="avatar">
+      </a>
     </div>
-  </div>
+  </header>
 
-  <h1>Muse - Origin of Symmetry</h1>
+  <main>
+    <h1>Muse - Origin of Symmetry</h1>
   
   <article class="article">
     <h2>Muse簡述</h2>
@@ -93,9 +96,10 @@
       <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" style="width:100%;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/album/ok-computer/1097861387"></iframe>
      
 
-    <a href="../index.html" class="back-link">← 回到首頁</a>
-  </article>
+      <a href="../index.html" class="back-link">← 回到首頁</a>
+    </article>
+  </main>
 
-  <script src="../jj.js"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

@@ -1,75 +1,71 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
- 
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="個人網站與音樂分享">
+  <meta property="og:title" content="我想睡覺">
+  <meta property="og:description" content="個人網站與音樂分享">
+  <meta property="og:type" content="website">
   <title>我想睡覺</title>
-  <link rel="icon" href="img/Favicon.png" type="image/x-icon" />
-  
+  <link rel="icon" href="img/Favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
   <!-- 防止閃白 -->
-  <script>
-    
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    if (darkMode) {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.style.backgroundColor = '#212121';
-    }
-  </script>
-  
-<link rel="stylesheet" href="style.css">
+  <script src="js/theme-loader.js"></script>
 </head>
 
 <body>
- 
-  <div class="top-bar">
-    <button class="toggle-button" onclick="toggleDarkMode()">☀️</button>
+  <header class="top-bar">
+    <button class="toggle-button" id="themeToggle" aria-label="切換深淺色模式">☀️</button>
     <div id="avatarContainer" class="avatar-wrapper">
-      <img src="img/avatar.jpg" alt="大頭" class="avatar" onclick="goToProfile()">
+      <a href="profile.html" aria-label="前往個人頁面">
+        <img src="img/avatar.jpg" alt="個人頭像" class="avatar">
+      </a>
     </div>
-  </div>
+  </header>
 
-  <a id="music-link" href="#" target="_blank" style="display: none;">
-    <div id="music" class="music-card">
-      <img id="cover" class="music-cover" src="" alt="封面">
-      <div class="music-info">
-        <div class="music-title">
-          <span id="track-name">歌曲名稱</span>
-        </div>
-
-          <div class="music-meta">
-            <div class="music-artist" id="artist-name" onclick="goToArtist(event)">藝人</div>
-            <span>-</span>
-            <div class="music-album" id="album-name" onclick="goToAlbum(event)">專輯名稱</div>
+  <main>
+    <a id="music-link" href="#" target="_blank" rel="noopener" class="hidden">
+      <div id="music" class="music-card">
+        <img id="cover" class="music-cover" src="" alt="專輯封面">
+        <div class="music-info">
+          <div class="music-title">
+            <span id="track-name">歌曲名稱</span>
           </div>
 
-        <div class="music-status" id="track-status">🎧 正在播放</div>
-      </div>
-    </div>
-  </a>
+          <div class="music-meta">
+            <div class="music-artist" id="artist-name">藝人</div>
+            <span>-</span>
+            <div class="music-album" id="album-name">專輯名稱</div>
+          </div>
 
-  <div id="articles">
-    <a href="article/article1.html" class="article-link">
-      <section class="article" style="--index: 0;">
-        <h2>花木蘭影評</h2>
-        <p>把這個放這裡只是為了撐一下版面</p>
-      </section>
+          <div class="music-status" id="track-status">🎧 正在播放</div>
+        </div>
+      </div>
     </a>
-    <a href="article/article2.html" class="article-link">
-      <section class="article" style="--index: 1;">
-        <h2>Muse - Origin of Symmetry</h2>
-        <p>我承認我聽 Will Of The People 聽笑了，什麼破爛玩意</p>
-      </section>
-    </a>
-    <a href="article/article3.html" class="article-link">
-      <section class="article" style="--index: 2;">
-        <h2>我做不完報告</h2>
-        <p>我也不想在這裡</p>
-      </section>
-    </a>
-  </div>
+
+    <div id="articles">
+      <a href="article/article1.html" class="article-link">
+        <section class="article" style="--index: 0;">
+          <h2>花木蘭影評</h2>
+          <p>把這個放這裡只是為了撐一下版面</p>
+        </section>
+      </a>
+      <a href="article/article2.html" class="article-link">
+        <section class="article" style="--index: 1;">
+          <h2>Muse - Origin of Symmetry</h2>
+          <p>我承認我聽 Will Of The People 聽笑了，什麼破爛玩意</p>
+        </section>
+      </a>
+      <a href="article/article3.html" class="article-link">
+        <section class="article" style="--index: 2;">
+          <h2>我做不完報告</h2>
+          <p>我也不想在這裡</p>
+        </section>
+      </a>
+    </div>
+  </main>
   
-  <script src="jj.js"></script>
-  
+  <script src="js/main.js"></script>
 </body>
 </html>

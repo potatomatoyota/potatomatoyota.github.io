@@ -1,315 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>個人頁 </title>
-  <link rel="icon" href="img/Favicon.png" type="image/x-icon" />
-
-  <script>
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    if (darkMode) {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.style.backgroundColor = '#212121';
-    }
-  </script>
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      height: 100%;
-      font-family: 'Microsoft JhengHei', sans-serif;
-      transition: background-color 0.4s, color 0.4s;
-    }
-    
-    #localVideo {
-      width: 90%;
-      max-width: 600px;
-      height: auto; 
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      animation: zoomIn 0.4s ease;
-    }
-
-    body {
-      background: linear-gradient(to bottom, #fdfdfd, #eaeaea);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      padding-top: 80px; /* 為頂部長條增加間距 */
-    }
-
-    .container {
-      background: white;
-      padding: 40px 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      width: 100%;
-      text-align: center;
-      animation: fadeInUp 0.6s ease both;
-    }
-
-    @keyframes fadeInUp {
-      0% { transform: translateY(40px); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-
-    .profile-avatar-wrapper {
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
-      padding: 5px;
-      margin: 0 auto 20px;
-      background: linear-gradient(135deg, #ccc, #aaa);
-      transition: background 0.5s, box-shadow 0.5s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .profile-avatar-wrapper.playing {
-      background: linear-gradient(135deg, #48ff91, #2ac770);
-      box-shadow: 0 0 15px #2ac770;
-    }
-
-    .profile-avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    h1 { font-size: 2.4em; margin-bottom: 10px; }
-    p { font-size: 1.2em; line-height: 1.8; margin-bottom: 25px; }
-
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-
-    .actions a, .actions button {
-      text-decoration: none;
-      padding: 10px 20px;
-      background: #333;
-      color: white;
-      border-radius: 8px;
-      transition: background 0.3s;
-      border: none;
-      cursor: pointer;
-      font-size: 1em;
-    }
-
-    .actions a:hover, .actions button:hover { background: #555; }
-
-    
-    .top-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background: linear-gradient(to bottom, #fdfdfd, #f5f5f5);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      z-index: 990;
-      transition: background 0.3s;
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      justify-content: space-between;
-    }
-
-    
-    .toggle-button {
-      width: 42px;
-      height: 42px;
-      font-size: 18px;
-      border-radius: 50%;
-      border: none;
-      background: #ddd;
-      cursor: pointer;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
-      transition: background 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      margin-left: 10px;
-    }
-
-   
-    .avatar-wrapper {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      transition: transform 0.3s;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-
-    .avatar-wrapper:hover {
-      transform: scale(1.05);
-    }
-
-    
-    .avatar {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .now-playing { margin-top: 20px; font-size: 0.95em; color: #666; }
-    .now-playing a { color: #0077cc; text-decoration: none; }
-    .now-playing a:hover { text-decoration: underline; }
-
-    #videoModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(6px);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      flex-direction: column;
-    }
-
-    @keyframes zoomIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    .close-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      z-index: 1001;
-    }
-
-    html.dark-mode body { background: linear-gradient(to bottom, #1a1a1a, #2a2a2a); color: #f5f5f5; }
-    html.dark-mode .container { background: #2f2f2f; box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05); }
-    html.dark-mode .actions a, html.dark-mode .actions button { background: #444; color: #f5f5f5; }
-    html.dark-mode .actions a:hover, html.dark-mode .actions button:hover { background: #666; }
-    html.dark-mode .toggle-button { background: #444; color: #fff; }
-    html.dark-mode .now-playing { color: #aaa; }
-    html.dark-mode .now-playing a { color: #66ccff; }
-    html.dark-mode .top-bar { background: linear-gradient(to bottom, #212121, #1a1a1a); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="王宥臣的個人資料頁面">
+  <meta property="og:title" content="個人頁">
+  <meta property="og:description" content="王宥臣的個人資料頁面">
+  <meta property="og:type" content="profile">
+  <title>個人頁</title>
+  <link rel="icon" href="img/Favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <script src="js/theme-loader.js"></script>
 </head>
 
 <body>
-  
-  <div class="top-bar">
-    <button class="toggle-button" onclick="toggleDarkMode()">☀️</button>
+  <header class="top-bar">
+    <button class="toggle-button" id="themeToggle" aria-label="切換深淺色模式">☀️</button>
     <div id="avatarContainer" class="avatar-wrapper">
-      <img src="img/avatar.jpg" alt="大頭" class="avatar" onclick="goToProfile()">
+      <a href="index.html" aria-label="前往首頁">
+        <img src="img/avatar.jpg" alt="個人頭像" class="avatar">
+      </a>
     </div>
-  </div>
+  </header>
 
-  <div class="container">
-    <div class="profile-avatar-wrapper" id="avatarRing">
-      <img src="img/avatar.jpg" alt="大頭" class="profile-avatar" />
+  <main>
+    <div class="container profile-container">
+      <div class="profile-avatar-wrapper" id="avatarRing">
+        <img src="img/avatar.jpg" alt="個人頭像" class="profile-avatar">
+      </div>
+      <h1>王宥臣</h1>
+      <p>說實話這個網站只是為了玩last.fm的API</p>
+      <div class="actions">
+        <a href="index.html" class="action-btn">🏠 回首頁</a>
+        <button class="action-btn" id="contactBtn">📧 聯絡我</button>
+      </div>
+      <div class="now-playing" id="nowPlaying">正在載入最近的音樂…</div>
     </div>
-    <h1>王宥臣</h1>
-    <p>說實話這個網站只是為了玩last.fm的API</p>
-    <div class="actions">
-      <a href="index.html">🏠 回首頁</a>
-      <button onclick="openModal()">📧 聯絡我</button>
-    </div>
-    <div class="now-playing" id="nowPlaying">正在載入最近的音樂…</div>
-  </div>
+  </main>
 
-  
-  <div id="videoModal">
-    <button class="close-button" onclick="closeModal()">X</button>
+  <div id="videoModal" class="modal" aria-hidden="true">
+    <button class="close-button" id="closeModal" aria-label="關閉">✕</button>
     <video id="localVideo" controls>
       <source src="Rick Astley - Never Gonna Give You Up .mp4" type="video/mp4">
       您的瀏覽器不支援 HTML5 播放本地影片。
     </video>
   </div>
 
-  <script>
-    function toggleDarkMode() {
-      const html = document.documentElement;
-      html.classList.toggle('dark-mode');
-      const isDark = html.classList.contains('dark-mode');
-      localStorage.setItem('darkMode', isDark);
-      document.querySelector('.toggle-button').textContent = isDark ? '🌙' : '☀️';
-    }
-  
-    async function fetchNowPlaying() {
-      const url = 'https://lastfm-last-played.biancarosa.com.br/potatomatoyota/latest-song';
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const track = data.track;
-  
-        const isPlaying = track['@attr']?.nowplaying === 'true';
-        const title = track.name;
-        const artist = track.artist['#text'];
-        const link = track.url;
-  
-        const display = isPlaying
-          ? `🎵 正在聽：<a href="${link}" target="_blank">${artist} - ${title}</a>`
-          : `🎵 剛聽：<a href="${link}" target="_blank">${artist} - ${title}</a>`;
-  
-        document.getElementById('nowPlaying').innerHTML = display;
-  
-        const avatarRing = document.getElementById('avatarRing');
-        if (isPlaying) {
-          avatarRing.classList.add('playing');
-        } else {
-          avatarRing.classList.remove('playing');
-        }
-      } catch (err) {
-        document.getElementById('nowPlaying').textContent = '無法載入音樂資訊';
-      }
-    }
-  
-    function openModal() {
-      const modal = document.getElementById('videoModal');
-      const video = document.getElementById('localVideo');
-      modal.style.display = 'flex';
-      video.play();
-    }
-  
-    function closeModal() {
-      const modal = document.getElementById('videoModal');
-      const video = document.getElementById('localVideo');
-      modal.style.display = 'none';
-      video.pause();
-      video.currentTime = 0;
-    }
-    
-    
-    function goToProfile() {
-      window.location.href = "profile.html";
-    }
-  
-    window.onload = () => {
-      const isDark = localStorage.getItem('darkMode') === 'true';
-      document.querySelector('.toggle-button').textContent = isDark ? '🌙' : '☀️';
-      document.body.style.opacity = '1';
-      
-      fetchNowPlaying();
-      setInterval(fetchNowPlaying, 6000);
-    };
-  </script>
+  <script src="js/main.js"></script>
 </body>
 </html>
