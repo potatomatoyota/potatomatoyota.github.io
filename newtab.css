@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  height: 100vh;
+  transition: background-color 0.8s ease;
+}
+
+.container {
+  text-align: center;
+}
+
+#album-cover-container {
+  position: relative;
+}
+
+#album-cover {
+  width: 300px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transition: transform 0.4s ease;
+}
+
+#shortcuts-carousel {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  overflow: hidden;
+  width: 100%;
+  justify-content: center;
+}
+
+.shortcut-card {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  transition: background 0.3s;
+}
+
+#track-info {
+  margin-top: 20px;
+}

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lastfm</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 1s ease, color 1s ease;
+      text-align: center;
+      overflow: hidden;
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 600px;
+      padding: 2rem;
+      transition: opacity 1s ease;
+    }
+
+    .album-wrapper {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin-bottom: 1.2rem;
+    }
+
+    .album-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .album-cover:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    .track-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .track-name {
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+      font-family: 'Noto Sans TC', "Microsoft JhengHei", "PingFang TC", sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.15rem;
+    }
+
+    .album-name {
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+      font-size: 1.5rem;
+      opacity: 0.9;
+      margin-bottom: 0.15rem;
+    }
+
+    .artist-name {
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+      font-size: 1.25rem;
+      opacity: 0.8;
+    }
+
+    .loading {
+      font-size: 1.5rem;
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      margin-top: 1rem;
+    }
+
+    .fade {
+      opacity: 1;
+    }
+
+    .fade-out {
+      opacity: 0;
+    }
+    
+    
+  </style>
+</head>
+<body>
+  <div class="container fade" id="app">
+    <div class="loading">載入中...</div>
+  </div>
+  
+  <script>
+    let currentTrackId = null;
+    let currentAlbumImgUrl = null;
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h, s, l };
+    }
+    function hslToRgb(h, s, l) {
+      let r, g, b;
+
+      if (s === 0) {
+        r = g = b = l; // achromatic
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+
+      return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+      };
+    }
+
+    function getSaturatedDominantColor(imgEl) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = imgEl.width;
+      const h = canvas.height = imgEl.height;
+      ctx.drawImage(imgEl, 0, 0, w, h);
+
+      const data = ctx.getImageData(0, 0, w, h).data;
+      const colorMap = new Map();
+
+      let totalR = 0, totalG = 0, totalB = 0;
+      let totalPixels = 0;
+      let colorfulPixels = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        if (a < 128) continue;
+
+        totalR += r;
+        totalG += g;
+        totalB += b;
+        totalPixels++;
+
+        const isGrayish = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
+        if (!isGrayish) colorfulPixels++;
+
+        const key = `${Math.floor(r / 10) * 10},${Math.floor(g / 10) * 10},${Math.floor(b / 10) * 10}`;
+        const [pr, pg, pb] = key.split(',').map(Number);
+        const { s, l } = rgbToHsl(pr, pg, pb);
+
+        if (!colorMap.has(key)) {
+          colorMap.set(key, { count: 1, saturation: s, r: pr, g: pg, b: pb, l });
+        } else {
+          const prev = colorMap.get(key);
+          colorMap.set(key, { 
+            count: prev.count + 1, 
+            saturation: s, 
+            r: pr, 
+            g: pg, 
+            b: pb, 
+            l
+          });
+        }
+      }
+
+      const colorDiversity = colorMap.size / (totalPixels * 0.01);
+      const colorfulRatio = colorfulPixels / totalPixels;
+
+      if (colorDiversity > 3.5 || colorfulRatio < 0.4) {
+        let avgR = Math.round(totalR / totalPixels);
+        let avgG = Math.round(totalG / totalPixels);
+        let avgB = Math.round(totalB / totalPixels);
+        const { h, s, l } = rgbToHsl(avgR, avgG, avgB);
+        if (s < 0.4) {
+          const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.8), l);
+          avgR = enhancedColor.r;
+          avgG = enhancedColor.g;
+          avgB = enhancedColor.b;
+        }
+        return { r: avgR, g: avgG, b: avgB };
+      }
+
+      // ✅ 過濾低佔比顏色
+      const minPixelRatio = 0.015;
+      const filtered = Array.from(colorMap.entries()).filter(([_, val]) => val.count / totalPixels >= minPixelRatio);
+
+      // 如果過濾後沒剩下就回平均色
+      if (filtered.length === 0) {
+        let avgR = Math.round(totalR / totalPixels);
+        let avgG = Math.round(totalG / totalPixels);
+        let avgB = Math.round(totalB / totalPixels);
+        const { h, s, l } = rgbToHsl(avgR, avgG, avgB);
+        if (s < 0.4) {
+          const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.8), l);
+          avgR = enhancedColor.r;
+          avgG = enhancedColor.g;
+          avgB = enhancedColor.b;
+        }
+        return { r: avgR, g: avgG, b: avgB };
+      }
+
+      const sorted = filtered.sort((a, b) => {
+        const aScore = Math.pow(a[1].saturation, 1.5) * Math.sqrt(a[1].count);
+        const bScore = Math.pow(b[1].saturation, 1.5) * Math.sqrt(b[1].count);
+        return bScore - aScore;
+      });
+
+      const topColors = sorted.slice(0, Math.min(5, sorted.length));
+      const bestColor = topColors.reduce((best, current) => {
+        return current[1].saturation > best[1].saturation ? current : best;
+      }, topColors[0]);
+
+      let { r, g, b, saturation } = bestColor[1];
+      if (saturation < 0.5) {
+        const { h, s, l } = rgbToHsl(r, g, b);
+        const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.5), l);
+        r = enhancedColor.r;
+        g = enhancedColor.g;
+        b = enhancedColor.b;
+      }
+
+      return { r, g, b };
+    }
+
+
+    function adjustColor(c) {
+      const avg = (c.r + c.g + c.b) / 3;
+      if (avg > 200) {
+        c.r *= 0.7; c.g *= 0.7; c.b *= 0.7;
+      } else if (avg < 50) {
+        c.r = Math.min(255, c.r * 1.5);
+        c.g = Math.min(255, c.g * 1.5);
+        c.b = Math.min(255, c.b * 1.5);
+      }
+      return c;
+    }
+
+    function getSafeTextColor(bg) {
+      const brightness = (bg.r * 299 + bg.g * 587 + bg.b * 114) / 1000;
+      let r, g, b;
+      if (brightness < 128) {
+        r = Math.min(255, bg.r + 150);
+        g = Math.min(255, bg.g + 150);
+        b = Math.min(255, bg.b + 150);
+      } else {
+        r = Math.max(80, bg.r - 150);
+        g = Math.max(80, bg.g - 150);
+        b = Math.max(80, bg.b - 150);
+      }
+
+        // 避免太黑
+        const isTooDark = (r + g + b) / 3 < 50;
+        const isTooGray = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
+
+        if (isTooDark || isTooGray) {
+          // 改亮一點
+          return { r: 218, g: 216, b: 214 }; 
+        }
+
+        return { r, g, b };
+      }
+
+
+    function renderTextOnly(track) {
+      const app = document.getElementById('app');
+      const nameEl = app.querySelector('.track-name');
+      const albumEl = app.querySelector('.album-name');
+      const artistEl = app.querySelector('.artist-name');
+
+      if (nameEl && albumEl && artistEl) {
+        nameEl.textContent = track.name;
+        albumEl.textContent = track.album['#text'];
+        artistEl.textContent = track.artist['#text'];
+      } else {
+        renderFull(track);
+      }
+    }
+
+    function renderFull(track) {
+      const app = document.getElementById('app');
+      const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = albumImgUrl;
+
+      img.onload = () => {
+        const color = adjustColor(getSaturatedDominantColor(img));
+        const textColor = getSafeTextColor(color);
+        const bgColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+        const fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
+
+        app.classList.add('fade-out');
+
+        setTimeout(() => {
+          app.innerHTML = `
+            <div class="album-wrapper">
+              <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
+              
+            </div>
+            <div class="track-info">
+              <div class="track-name">${track.name}</div>
+              <div class="album-name">${track.album['#text']}</div>
+              <div class="artist-name">${track.artist['#text']}</div>
+            </div>
+          `;
+          document.body.style.backgroundColor = bgColor;
+          document.body.style.color = fontColor;
+          app.classList.remove('fade-out');
+          app.classList.add('fade');
+          currentAlbumImgUrl = albumImgUrl;
+        }, 500);
+      };
+    }
+
+    async function renderApp(songData) {
+      if (!songData?.track) return;
+      const track = songData.track;
+      const trackId = `${track.name}-${track.artist['#text']}`;
+      const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+      if (trackId === currentTrackId) return;
+      currentTrackId = trackId;
+
+      if (albumImgUrl === currentAlbumImgUrl) {
+        renderTextOnly(track);
+      } else {
+        renderFull(track);
+      }
+    }
+
+    async function getSongInfo() {
+      try {
+        const res = await fetch('https://lastfm-last-played.biancarosa.com.br/potatomatoyota/latest-song'); 
+        if (!res.ok) throw new Error('Fetch failed');
+        return await res.json();
+      } catch (err) {
+        const app = document.getElementById('app');
+        app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`; 
+        return null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const song = await getSongInfo();
+      renderApp(song);
+      setInterval(async () => {
+        const song = await getSongInfo();
+        renderApp(song);
+      }, 300);
+    });
+
+  
+  </script>
+</body>
+</html>
