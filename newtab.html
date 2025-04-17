@@ -374,9 +374,19 @@
       const albumEl = app.querySelector('.album-name');
       const artistEl = app.querySelector('.artist-name');
 
+      // 創建Last.fm的URL
+      const trackUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/_/${encodeURIComponent(track.name)}`;
+      const albumUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/${encodeURIComponent(track.album['#text'])}`;
+      const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
+
       if (nameEl && albumEl && artistEl) {
+        nameEl.href = trackUrl;
         nameEl.textContent = track.name;
+        
+        albumEl.href = albumUrl;
         albumEl.textContent = track.album['#text'];
+        
+        artistEl.href = artistUrl;
         artistEl.textContent = track.artist['#text'];
       } else {
         renderFull(track);
@@ -384,39 +394,51 @@
     }
 
     function renderFull(track) {
-      const app = document.getElementById('app');
-      const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = albumImgUrl;
+        const app = document.getElementById('app');
+        const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = albumImgUrl;
 
-      img.onload = () => {
-        const color = adjustColor(getSaturatedDominantColor(img));
-        const textColor = getSafeTextColor(color);
-        const bgColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
-        const fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
+        // 創建Last.fm的URL
+        const trackUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/_/${encodeURIComponent(track.name)}`;
+        const albumUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/${encodeURIComponent(track.album['#text'])}`;
+        const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
 
-        app.classList.add('fade-out');
+        img.onload = () => {
+          const color = adjustColor(getSaturatedDominantColor(img));
+          const textColor = getSafeTextColor(color);
+          const bgColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+          const fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
 
-        setTimeout(() => {
-          app.innerHTML = `
-            <div class="album-wrapper">
-              <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
-            </div>
-            <div class="track-info">
-              <div class="track-name">${track.name}</div>
-              <div class="album-name">${track.album['#text']}</div>
-              <div class="artist-name">${track.artist['#text']}</div>
-            </div>
-          `;
-          document.body.style.backgroundColor = bgColor;
-          document.body.style.color = fontColor;
-          app.classList.remove('fade-out');
-          app.classList.add('fade');
-          currentAlbumImgUrl = albumImgUrl;
-        }, 800);
-      };
-    }
+          app.classList.add('fade-out');
+
+          setTimeout(() => {
+            app.innerHTML = `
+              <div class="album-wrapper">
+                <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
+              </div>
+              <div class="track-info">
+                <a href="${trackUrl}" target="_blank" class="track-name">${track.name}</a>
+                <a href="${albumUrl}" target="_blank" class="album-name">${track.album['#text']}</a>
+                <a href="${artistUrl}" target="_blank" class="artist-name">${track.artist['#text']}</a>
+              </div>
+            `;
+            document.body.style.backgroundColor = bgColor;
+            document.body.style.color = fontColor;
+            app.classList.remove('fade-out');
+            app.classList.add('fade');
+            currentAlbumImgUrl = albumImgUrl;
+            
+            // 顏色與文字顏色相同
+            const links = app.querySelectorAll('a');
+            links.forEach(link => {
+              link.style.color = fontColor;
+              link.style.textDecoration = 'none';
+            });
+          }, 800);
+        };
+}
 
     async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
