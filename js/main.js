@@ -87,7 +87,7 @@ function setupAvatarHandling() {
   const avatarContainer = document.getElementById('avatarContainer');
   if (!avatarContainer) return;
   
-  // 可能已經使用 <a> 標籤包裹，所以這裡不需額外處理
+ 
 }
 
 // 載入音樂播放資訊

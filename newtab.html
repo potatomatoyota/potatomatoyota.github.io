@@ -6,6 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>lastfm</title>
   <style>
+    /*手機*/
+    @media (max-width: 480px) {
+      .album-wrapper {
+        max-width: 250px !important;
+
+        width: 70vw !important;
+        aspect-ratio: 1 / 1;
+      }
+
+      .track-name {
+        font-size: 1.4rem !important;
+      }
+
+      .album-name {
+        font-size: 1.1rem !important;
+      }
+
+      .artist-name {
+        font-size: 1rem !important;
+      }
+
+      .container {
+        padding: 1rem !important;
+      }
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -32,14 +58,16 @@
       align-items: center;
       justify-content: center;
       max-width: 600px;
+      width: 100%;
       padding: 2rem;
       transition: opacity 1s ease;
     }
 
     .album-wrapper {
       position: relative;
-      width: 400px;
-      height: 400px;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
       margin-bottom: 1.2rem;
     }
 
@@ -214,7 +242,7 @@
       const colorDiversity = colorMap.size / (totalPixels * 0.01);
       const colorfulRatio = colorfulPixels / totalPixels;
 
-      if (colorDiversity > 3.5 || colorfulRatio < 0.4) {
+      if (colorDiversity > 3.5 || colorfulRatio < 0.5) {
         let avgR = Math.round(totalR / totalPixels);
         let avgG = Math.round(totalG / totalPixels);
         let avgB = Math.round(totalB / totalPixels);
