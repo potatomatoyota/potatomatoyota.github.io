@@ -132,8 +132,6 @@
     .fade-out {
       opacity: 0;
     }
-    
-    
   </style>
 </head>
 <body>
@@ -145,6 +143,7 @@
     let currentTrackId = null;
     let currentAlbumImgUrl = null;
     let lastRenderTimestamp = 0;
+    let isFirstLoad = true;
     
     function rgbToHsl(r, g, b) {
       r /= 255; g /= 255; b /= 255;
@@ -300,7 +299,6 @@
       return { r, g, b };
     }
 
-
     function adjustColor(c) {
       const avg = (c.r + c.g + c.b) / 3;
       if (avg > 200) {
@@ -326,18 +324,49 @@
         b = Math.max(80, bg.b - 150);
       }
 
-        // 避免太黑
-        const isTooDark = (r + g + b) / 3 < 50;
-        const isTooGray = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
+      // 避免太黑
+      const isTooDark = (r + g + b) / 3 < 50;
+      const isTooGray = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
 
-        if (isTooDark || isTooGray) {
-          // 改亮一點
-          return { r: 218, g: 216, b: 214 }; 
-        }
-
-        return { r, g, b };
+      if (isTooDark || isTooGray) {
+        // 改亮一點
+        return { r: 218, g: 216, b: 214 }; 
       }
 
+      return { r, g, b };
+    }
+
+    // 儲存歌曲資訊到 localStorage
+    function saveSongInfo(songData) {
+      if (!songData || !songData.track) return;
+      
+      // 為了避免儲存太多資料，只儲存必要的資訊
+      const savedData = {
+        track: {
+          name: songData.track.name,
+          artist: songData.track.artist,
+          album: songData.track.album,
+          image: songData.track.image,
+          '@attr': songData.track['@attr'],
+          savedAt: new Date().toISOString()
+        }
+      };
+      
+      localStorage.setItem('lastfm_last_song', JSON.stringify(savedData));
+    }
+
+    // 從 localStorage 讀取歌曲資訊
+    function getSavedSongInfo() {
+      const savedData = localStorage.getItem('lastfm_last_song');
+      if (!savedData) return null;
+      
+      try {
+        return JSON.parse(savedData);
+      } catch (e) {
+        console.error('Failed to parse saved song data:', e);
+        return null;
+      }
+    }
 
     function renderTextOnly(track) {
       const app = document.getElementById('app');
@@ -373,7 +402,6 @@
           app.innerHTML = `
             <div class="album-wrapper">
               <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
-              
             </div>
             <div class="track-info">
               <div class="track-name">${track.name}</div>
@@ -386,18 +414,23 @@
           app.classList.remove('fade-out');
           app.classList.add('fade');
           currentAlbumImgUrl = albumImgUrl;
-        }, 1500);
+        }, 800);
       };
     }
 
-    async function renderApp(songData) {
+    async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
 
       const track = songData.track;
-
-      // 檢查正在播放
       const isNowPlaying = track['@attr']?.nowplaying === 'true';
-      if (!isNowPlaying) return; // 不更新畫面
+      
+      // 如果不是首次載入，只在正在播放時更新
+      if (!isFirstLoad && !isNowPlaying) return;
+      
+      // 如果是正在播放的歌曲，儲存到 localStorage
+      if (isNowPlaying) {
+        saveSongInfo(songData);
+      }
 
       const trackId = `${track.name}-${track.artist['#text']}`;
       const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
@@ -412,13 +445,22 @@
       }
     }
 
-
     async function getSongInfo() {
       try {
         const res = await fetch('https://lastfm-last-played.biancarosa.com.br/potatomatoyota/latest-song'); 
         if (!res.ok) throw new Error('Fetch failed');
-        return await res.json();
+        const data = await res.json();
+        return data;
       } catch (err) {
+        console.error('Error fetching song info:', err);
+        // 嘗試從本地存儲讀取
+        const cachedData = getSavedSongInfo();
+        if (cachedData) {
+          // 有快取資料就直接使用
+          return cachedData;
+        }
+        
+        // 如果都沒有就顯示錯誤
         const app = document.getElementById('app');
         app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`; 
         return null;
@@ -426,15 +468,27 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const song = await getSongInfo();
-      renderApp(song);
+      // 首先嘗試讀取快取資料並顯示
+      const cachedSong = getSavedSongInfo();
+      if (cachedSong) {
+        renderApp(cachedSong, true);
+      }
+      
+      // 然後再嘗試獲取最新資料
+      const latestSong = await getSongInfo();
+      if (latestSong) {
+        renderApp(latestSong, true);
+        isFirstLoad = false;
+      }
+      
+      // 設定定時器定期檢查更新
       setInterval(async () => {
         const song = await getSongInfo();
-        renderApp(song);
-      }, 1000);
+        if (song) {
+          renderApp(song, false);
+        }
+      }, 3000); // 每3秒檢查一次
     });
-
-  
   </script>
 </body>
 </html>
