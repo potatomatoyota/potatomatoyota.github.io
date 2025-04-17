@@ -4,6 +4,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <title>lastfm</title>
   <style>
     /*手機*/
@@ -143,7 +144,8 @@
   <script>
     let currentTrackId = null;
     let currentAlbumImgUrl = null;
-
+    let lastRenderTimestamp = 0;
+    
     function rgbToHsl(r, g, b) {
       r /= 255; g /= 255; b /= 255;
       const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -384,15 +386,22 @@
           app.classList.remove('fade-out');
           app.classList.add('fade');
           currentAlbumImgUrl = albumImgUrl;
-        }, 500);
+        }, 1500);
       };
     }
 
     async function renderApp(songData) {
       if (!songData?.track) return;
+
       const track = songData.track;
+
+      // 檢查正在播放
+      const isNowPlaying = track['@attr']?.nowplaying === 'true';
+      if (!isNowPlaying) return; // 不更新畫面
+
       const trackId = `${track.name}-${track.artist['#text']}`;
       const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+
       if (trackId === currentTrackId) return;
       currentTrackId = trackId;
 
@@ -402,6 +411,7 @@
         renderFull(track);
       }
     }
+
 
     async function getSongInfo() {
       try {
@@ -421,7 +431,7 @@
       setInterval(async () => {
         const song = await getSongInfo();
         renderApp(song);
-      }, 300);
+      }, 1000);
     });
 
   
