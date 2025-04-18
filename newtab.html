@@ -490,26 +490,30 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // 首先嘗試讀取快取資料並顯示
-      const cachedSong = getSavedSongInfo();
-      if (cachedSong) {
-        renderApp(cachedSong, true);
-      }
-      
-      // 然後再嘗試獲取最新資料
+    
       const latestSong = await getSongInfo();
       if (latestSong) {
         renderApp(latestSong, true);
-        isFirstLoad = false;
+      } else {
+        // 快取
+        const cachedSong = getSavedSongInfo();
+        if (cachedSong) {
+          renderApp(cachedSong, true);
+        } else {
+          const app = document.getElementById('app');
+          app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`;
+        }
       }
-      
+
+      isFirstLoad = false;
+
       // 設定定時器定期檢查更新
       setInterval(async () => {
         const song = await getSongInfo();
         if (song) {
           renderApp(song, false);
         }
-      }, 3000); // 每3秒檢查一次
+      }, 3000);
     });
   </script>
 </body>
