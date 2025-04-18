@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <title>lastfm</title>
   <style>
+    *{
+
+      font-family: 'Noto Sans TC', 'Noto Sans JP', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
     /*手機*/
     @media (max-width: 480px) {
       .album-wrapper {
@@ -94,24 +99,26 @@
       flex-direction: column;
       gap: 0.2rem;
     }
-
-    .track-name {
+    .track-name, .album-name, .artist-name {
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
-      font-family: 'Noto Sans TC', "Microsoft JhengHei", "PingFang TC", sans-serif;
+    }
+    .track-name {
+      
+      
       font-size: 2rem;
       font-weight: 800;
       margin-bottom: 0.15rem;
     }
 
     .album-name {
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+      
       font-size: 1.5rem;
       opacity: 0.9;
       margin-bottom: 0.15rem;
     }
 
     .artist-name {
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+      
       font-size: 1.25rem;
       opacity: 0.8;
     }
@@ -205,6 +212,8 @@
       let totalR = 0, totalG = 0, totalB = 0;
       let totalPixels = 0;
       let colorfulPixels = 0;
+      let blackPixels = 0;
+      let whitePixels = 0;
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
@@ -218,12 +227,19 @@
         totalB += b;
         totalPixels++;
 
+        // 檢測黑白像素
+        const isBlack = r < 30 && g < 30 && b < 30;
+        const isWhite = r > 225 && g > 225 && b > 225;
+        
+        if (isBlack) blackPixels++;
+        if (isWhite) whitePixels++;
+
         const isGrayish = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
-        if (!isGrayish) colorfulPixels++;
+        if (!isGrayish && !isBlack && !isWhite) colorfulPixels++;
 
         const key = `${Math.floor(r / 10) * 10},${Math.floor(g / 10) * 10},${Math.floor(b / 10) * 10}`;
         const [pr, pg, pb] = key.split(',').map(Number);
-        const { s, l } = rgbToHsl(pr, pg, pb);
+        const { h, s, l } = rgbToHsl(pr, pg, pb);
 
         if (!colorMap.has(key)) {
           colorMap.set(key, { count: 1, saturation: s, r: pr, g: pg, b: pb, l });
@@ -240,103 +256,221 @@
         }
       }
 
+      // 判斷圖片是否以黑色或白色為主
+      const blackRatio = blackPixels / totalPixels;
+      const whiteRatio = whitePixels / totalPixels;
+      const isBlackDominant = blackRatio > 0.65;
+      const isWhiteDominant = whiteRatio > 0.65;
+
       const colorDiversity = colorMap.size / (totalPixels * 0.01);
       const colorfulRatio = colorfulPixels / totalPixels;
 
+      // 對於多樣性低或彩色比例低的圖片，嘗試增強色彩
       if (colorDiversity > 3.5 || colorfulRatio < 0.5) {
+        // 允許黑色或白色如果它們佔據主導
+        if (isBlackDominant) {
+          return { r: 40, g: 40, b: 40 };
+        }
+        if (isWhiteDominant) {
+          return { r: 220, g: 220, b: 220 };
+        }
+        
         let avgR = Math.round(totalR / totalPixels);
         let avgG = Math.round(totalG / totalPixels);
         let avgB = Math.round(totalB / totalPixels);
         const { h, s, l } = rgbToHsl(avgR, avgG, avgB);
-        if (s < 0.4) {
-          const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.8), l);
-          avgR = enhancedColor.r;
-          avgG = enhancedColor.g;
-          avgB = enhancedColor.b;
-        }
-        return { r: avgR, g: avgG, b: avgB };
+        
+        // 增強色彩飽和度，避免灰色調
+        const newS = Math.min(0.75, s * 2);
+        // 調整亮度，避免太暗或太亮
+        const newL = l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l);
+        
+        const enhancedColor = hslToRgb(h, newS, newL);
+        return enhancedColor;
       }
 
-      // ✅ 過濾低佔比顏色
-      const minPixelRatio = 0.015;
-      const filtered = Array.from(colorMap.entries()).filter(([_, val]) => val.count / totalPixels >= minPixelRatio);
+      // 過濾低佔比顏色 
+      const minPixelRatio = 0.015; 
+      const filtered = Array.from(colorMap.entries())
+        .filter(([key, val]) => {
+          // 排除純黑純白，除非它們真的佔據主導
+          const [r, g, b] = key.split(',').map(Number);
+          const isNearBlack = r < 30 && g < 30 && b < 30;
+          const isNearWhite = r > 225 && g > 225 && b > 225;
+          
+          if ((isNearBlack && !isBlackDominant) || (isNearWhite && !isWhiteDominant)) {
+            return false;
+          }
+          
+          return val.count / totalPixels >= minPixelRatio;
+        });
 
       // 如果過濾後沒剩下就回平均色
       if (filtered.length === 0) {
+        // 允許黑色或白色如果它們佔據主導
+        if (isBlackDominant) {
+          return { r: 40, g: 40, b: 40 };
+        }
+        if (isWhiteDominant) {
+          return { r: 220, g: 220, b: 220 };
+        }
+        
         let avgR = Math.round(totalR / totalPixels);
         let avgG = Math.round(totalG / totalPixels);
         let avgB = Math.round(totalB / totalPixels);
         const { h, s, l } = rgbToHsl(avgR, avgG, avgB);
+        
+        // 避免太灰的顏色
         if (s < 0.4) {
-          const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.8), l);
-          avgR = enhancedColor.r;
-          avgG = enhancedColor.g;
-          avgB = enhancedColor.b;
+          const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.8), 
+            l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l));
+          return enhancedColor;
         }
+        
         return { r: avgR, g: avgG, b: avgB };
       }
 
+      // 根據顏色飽和度和數量排序
       const sorted = filtered.sort((a, b) => {
-        const aScore = Math.pow(a[1].saturation, 1.5) * Math.sqrt(a[1].count);
-        const bScore = Math.pow(b[1].saturation, 1.5) * Math.sqrt(b[1].count);
+        // 降低純黑純白的權重
+        const [aR, aG, aB] = a[0].split(',').map(Number);
+        const [bR, bG, bB] = b[0].split(',').map(Number);
+        
+        const aIsGray = Math.abs(aR - aG) < 20 && Math.abs(aG - aB) < 20 && Math.abs(aR - aB) < 20;
+        const bIsGray = Math.abs(bR - bG) < 20 && Math.abs(bG - bB) < 20 && Math.abs(bR - bB) < 20;
+        
+        // 為灰色調降低權重
+        const aWeight = aIsGray ? 0.5 : 1;
+        const bWeight = bIsGray ? 0.5 : 1;
+        
+        
+        const aOccupancyFactor = Math.pow(a[1].count / totalPixels, 1.5) * 3;
+        const bOccupancyFactor = Math.pow(b[1].count / totalPixels, 1.5) * 3;
+        
+        
+        const aScore = Math.pow(a[1].saturation, 1.2) * aOccupancyFactor * aWeight;
+        const bScore = Math.pow(b[1].saturation, 1.2) * bOccupancyFactor * bWeight;
+        
         return bScore - aScore;
       });
 
       const topColors = sorted.slice(0, Math.min(5, sorted.length));
+      
+      // 直接選擇超過30%的超高佔比顏色
+      const dominantColor = topColors.find(color => color[1].count / totalPixels > 0.3);
+      if (dominantColor) {
+        let { r, g, b, saturation, l } = dominantColor[1];
+        
+        // 避免太灰的顏色
+        if (saturation < 0.4 && !isBlackDominant && !isWhiteDominant) {
+          const { h } = rgbToHsl(r, g, b);
+          // 增強飽和度並保持適當亮度
+          const enhancedColor = hslToRgb(h, Math.min(0.7, saturation * 1.8), 
+            l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l));
+          return enhancedColor;
+        }
+        
+        return { r, g, b };
+      }
+      
+      // 如果沒有超高佔比顏色，選擇最佳顏色
       const bestColor = topColors.reduce((best, current) => {
-        return current[1].saturation > best[1].saturation ? current : best;
+        // 避免選擇太接近黑白的顏色
+        const [r, g, b] = current[0].split(',').map(Number);
+        const isNearBlackOrWhite = (r < 40 && g < 40 && b < 40) || (r > 215 && g > 215 && b > 215);
+        
+        if (isNearBlackOrWhite && !isBlackDominant && !isWhiteDominant) {
+          return best;
+        }
+        
+        
+        const currentScore = current[1].saturation * Math.sqrt(current[1].count / totalPixels);
+        const bestScore = best[1].saturation * Math.sqrt(best[1].count / totalPixels);
+        
+        return currentScore > bestScore ? current : best;
       }, topColors[0]);
 
-      let { r, g, b, saturation } = bestColor[1];
-      if (saturation < 0.5) {
-        const { h, s, l } = rgbToHsl(r, g, b);
-        const enhancedColor = hslToRgb(h, Math.min(0.7, s * 1.5), l);
-        r = enhancedColor.r;
-        g = enhancedColor.g;
-        b = enhancedColor.b;
+      let { r, g, b, saturation, l } = bestColor[1];
+      
+     
+      if (saturation < 0.4 && !isBlackDominant && !isWhiteDominant) {
+        const { h } = rgbToHsl(r, g, b);
+       
+        const enhancedColor = hslToRgb(h, Math.min(0.7, saturation * 1.8), 
+          l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l));
+        return enhancedColor;
       }
 
       return { r, g, b };
     }
-
     function adjustColor(c) {
+      // 計算平均亮度
       const avg = (c.r + c.g + c.b) / 3;
-      if (avg > 200) {
-        c.r *= 0.7; c.g *= 0.7; c.b *= 0.7;
-      } else if (avg < 50) {
-        c.r = Math.min(255, c.r * 1.5);
-        c.g = Math.min(255, c.g * 1.5);
-        c.b = Math.min(255, c.b * 1.5);
+      
+      // 檢查是否是接近純黑或純白
+      const isNearBlack = avg < 40;
+      const isNearWhite = avg > 215;
+      
+      // 避免純黑色
+      if (isNearBlack) {
+        c.r = Math.max(40, c.r);
+        c.g = Math.max(40, c.g);
+        c.b = Math.max(40, c.b);
+      } 
+      // 避免純白色
+      else if (isNearWhite) {
+        c.r = Math.min(215, c.r);
+        c.g = Math.min(215, c.g);
+        c.b = Math.min(215, c.b);
       }
+      // 調整過亮或過暗的顏色
+      else if (avg > 200) {
+        c.r = Math.max(30, c.r * 0.8);
+        c.g = Math.max(30, c.g * 0.8);
+        c.b = Math.max(30, c.b * 0.8);
+      } else if (avg < 50) {
+        c.r = Math.min(225, c.r * 1.5);
+        c.g = Math.min(225, c.g * 1.5);
+        c.b = Math.min(225, c.b * 1.5);
+      }
+      
       return c;
     }
-
     function getSafeTextColor(bg) {
+  
       const brightness = (bg.r * 299 + bg.g * 587 + bg.b * 114) / 1000;
+      
+      // 最低對比度參數 
+      const contrastFactor = 120;
+      
       let r, g, b;
+      
       if (brightness < 128) {
-        r = Math.min(255, bg.r + 150);
-        g = Math.min(255, bg.g + 150);
-        b = Math.min(255, bg.b + 150);
+        // 如果背景暗，使文字稍亮
+        r = Math.min(255, bg.r + contrastFactor);
+        g = Math.min(255, bg.g + contrastFactor);
+        b = Math.min(255, bg.b + contrastFactor);
       } else {
-        r = Math.max(80, bg.r - 150);
-        g = Math.max(80, bg.g - 150);
-        b = Math.max(80, bg.b - 150);
+        // 如果背景亮，使文字稍暗
+        r = Math.max(0, bg.r - contrastFactor);
+        g = Math.max(0, bg.g - contrastFactor);
+        b = Math.max(0, bg.b - contrastFactor);
       }
-
-      // 避免太黑
-      const isTooDark = (r + g + b) / 3 < 50;
-      const isTooGray = Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15;
-
-      if (isTooDark || isTooGray) {
-        // 改亮一點
-        return { r: 218, g: 216, b: 214 }; 
-      }
-
-      return { r, g, b };
+      
+      // 調整顏色飽和度
+      const { h, s, l } = rgbToHsl(r, g, b);
+      const bgHsl = rgbToHsl(bg.r, bg.g, bg.b);
+      
+      
+      const adjustedColor = hslToRgb(
+        bgHsl.h, 
+        Math.min(1, s * 1.2),
+        l 
+      );
+      
+      return adjustedColor;
     }
-
-    // 儲存歌曲資訊到 localStorage
+    // 儲存歌曲資訊
     function saveSongInfo(songData) {
       if (!songData || !songData.track) return;
       
