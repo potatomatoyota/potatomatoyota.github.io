@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+ <html lang="zh-TW">
 <head>
   
 
@@ -70,6 +70,7 @@
       width: 100%;
       padding: 2rem;
       transition: opacity 1s ease;
+      margin-top: 6rem;/*上下移*/
     }
 
     .album-wrapper {
@@ -144,14 +145,34 @@
     }
 
     .lyrics {
-    margin-top: 1.5rem;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    max-height: 300px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    opacity: 0.9;
-  }
+      position: relative; 
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      height: 3rem; 
+      overflow: hidden;
+      white-space: pre-wrap;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lyrics-line {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      padding: 0;
+    }
+
+    .lyrics-line.active {
+      opacity: 1;
+    }
+
+  
+
   </style>
 </head>
 <body>
@@ -164,7 +185,9 @@
     let currentAlbumImgUrl = null;
     let lastRenderTimestamp = 0;
     let isFirstLoad = true;
-    
+    let grayPixels = 0;
+
+
     function rgbToHsl(r, g, b) {
       r /= 255; g /= 255; b /= 255;
       const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -187,7 +210,7 @@
       let r, g, b;
 
       if (s === 0) {
-        r = g = b = l; // achromatic
+        r = g = b = l; 
       } else {
         const hue2rgb = (p, q, t) => {
           if (t < 0) t += 1;
@@ -215,8 +238,8 @@
     function getSaturatedDominantColor(imgEl) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const w = canvas.width = imgEl.width;
-      const h = canvas.height = imgEl.height;
+      const w = canvas.width = imgEl.naturalWidth;
+      const h = canvas.height = imgEl.naturalHeight;
       ctx.drawImage(imgEl, 0, 0, w, h);
 
       const data = ctx.getImageData(0, 0, w, h).data;
@@ -227,6 +250,7 @@
       let colorfulPixels = 0;
       let blackPixels = 0;
       let whitePixels = 0;
+      let grayPixels = 0;
 
       // 第一次掃描：計算黑白像素比例
       for (let i = 0; i < data.length; i += 4) {
@@ -242,9 +266,21 @@
         totalPixels++;
 
         // 檢測黑白像素
+        const isGrayish = 
+          Math.abs(r - g) < 12 &&
+          Math.abs(g - b) < 12 &&
+          Math.abs(r - b) < 12 &&
+          r > 40 && g > 40 && b > 40 && // 排除接近黑
+          r < 220 && g < 220 && b < 220; // 排除接近白
+
         const isBlack = r < 30 && g < 30 && b < 30;
         const isWhite = r > 225 && g > 225 && b > 225;
-        
+
+        // 優先統計黑白，再統計灰
+        if (isBlack) blackPixels++;
+        else if (isWhite) whitePixels++;
+        else if (isGrayish) grayPixels++;
+
         if (isBlack) blackPixels++;
         if (isWhite) whitePixels++;
       }
@@ -252,13 +288,68 @@
       // 立即判斷黑白佔比
       const blackRatio = blackPixels / totalPixels;
       const whiteRatio = whitePixels / totalPixels;
-      
-      // 如果黑色或白色佔比超過閾值，直接回傳
-      if (blackRatio > 0.6) {
-        return { r: 10, g: 10, b: 10 }; // 回傳深黑色
+      const grayRatio = grayPixels / totalPixels;
+
+      console.log('whiteRatio:', whiteRatio, 'grayRatio:', grayRatio);
+
+      if (blackRatio > 0.8) return { r: 10, g: 10, b: 10, manual: true };
+      if (whiteRatio > 0.8){ 
+        console.log('白色佔主導');
+        return { r: 240, g: 240, b: 240, manual: true };
+
       }
-      if (whiteRatio > 0.6) {
-        return { r: 240, g: 240, b: 240 }; // 回傳淺白色
+
+      if (grayRatio > 0.5 && colorfulPixels / totalPixels < 0.3) {
+        console.log(' 灰色佔主導，使用封面主要灰色');
+        
+        // 創建直方圖來分析灰度分布
+        const grayHistogram = new Array(256).fill(0);
+        let totalGrayPixels = 0;
+        
+        // 遍歷所有像素
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          // 判斷是否為灰色像素 (RGB差值很小)
+          if (Math.abs(r - g) < 15 && Math.abs(g - b) < 15 && Math.abs(r - b) < 15) {
+            // 計算灰度值
+            const grayValue = Math.round((r + g + b) / 3);
+            grayHistogram[grayValue]++;
+            totalGrayPixels++;
+          }
+        }
+        
+        // 計算灰度累積分布，尋找第25百分位的灰度值
+        let cumulativeSum = 0;
+        let darkPercentile = 0;  // 較暗的25%百分位
+        
+        // 找出第25百分位的灰度值（較暗的主色調）
+        const darkThreshold = totalGrayPixels * 0.25;
+        for (let i = 0; i < 256; i++) {
+          cumulativeSum += grayHistogram[i];
+          if (cumulativeSum >= darkThreshold) {
+            darkPercentile = i;
+            break;
+          }
+        }
+        
+        // 使用較暗的值作為基準
+       
+        // 否則取中間值，偏向暗側
+        let selectedGray = darkPercentile < 50 ? darkPercentile : Math.max(40, darkPercentile);
+        
+        // 確保顏色不會太淡
+        selectedGray = Math.min(selectedGray, 160); // 限制最大亮度，確保不會太淡
+        
+        let { h, s, l } = rgbToHsl(selectedGray, selectedGray, selectedGray);
+        
+        // 更溫和的亮度調整，偏暗一些
+        l = Math.max(0.2, Math.min(l * 1.1, 0.7)); // 減少提亮的幅度，最高只到0.5
+        
+        const compensatedGray = hslToRgb(h, s, l);
+        return { ...compensatedGray, manual: true };
       }
 
       // 如果黑白色佔比不足以直接決定，但仍然較高，調整後續權重判斷
@@ -301,45 +392,33 @@
       const colorDiversity = colorMap.size / (totalPixels * 0.01);
       const colorfulRatio = colorfulPixels / totalPixels;
 
-      // 對於多樣性低或彩色比例低的圖片，嘗試增強色彩
-      if (colorDiversity > 3.5 || colorfulRatio < 0.5) {
-        
-        
-        
-        let avgR = Math.round(totalR / totalPixels);
-        let avgG = Math.round(totalG / totalPixels);
-        let avgB = Math.round(totalB / totalPixels);
-        const { h, s, l } = rgbToHsl(avgR, avgG, avgB);
-        
-        // 增強色彩飽和度，避免灰色調
-        const newS = Math.min(0.75, s * 2);
-        // 調整亮度，避免太暗或太亮
-        const newL = l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l);
-        
-        const enhancedColor = hslToRgb(h, newS, newL);
-        return enhancedColor;
-      }
+      
 
       // 過濾低佔比顏色 
       const minPixelRatio = 0.015; 
       const filtered = Array.from(colorMap.entries())
-        .filter(([key, val]) => {
-          // 排除純黑純白，除非它們真的佔據主導
-          const [r, g, b] = key.split(',').map(Number);
-          const isNearBlack = r < 30 && g < 30 && b < 30;
-          const isNearWhite = r > 225 && g > 225 && b > 225;
-          
-          if ((isNearBlack && !isBlackDominant) || (isNearWhite && !isWhiteDominant)) {
-            return false;
-          }
-          
-          return val.count / totalPixels >= minPixelRatio;
-        });
+      .filter(([key, val]) => {
+        // 解析顏色值
+        const [r, g, b] = key.split(',').map(Number);
+        
+        // 完全排除黑色
+        const isNearBlack = r < 40 && g < 40 && b < 40;
+        if (isNearBlack) return false;
+        
+        // 處理白色
+        const isNearWhite = r > 225 && g > 225 && b > 225;
+        if (isNearWhite && !isWhiteDominant) {
+          return false;
+        }
+        
+        // 其他顏色正常過濾
+        return val.count / totalPixels >= minPixelRatio;
+      });
 
       // 如果過濾後沒剩下就回平均色
       if (filtered.length === 0) {
         
-        
+        console.log('平均色')
         
         let avgR = Math.round(totalR / totalPixels);
         let avgG = Math.round(totalG / totalPixels);
@@ -353,11 +432,11 @@
           return enhancedColor;
         }
 
-        // 讓灰色更深
+        
         
 
 
-        l = Math.min(l, 0.2); // 或 0.25，控制目標亮度
+        l = Math.min(l, 0.2); //控制目標亮度
 
         const darker = hslToRgb(h, s, l);
         avgR = darker.r;
@@ -398,14 +477,8 @@
       if (dominantColor) {
         let { r, g, b, saturation, l } = dominantColor[1];
         
-        // 避免太灰的顏色
-        if (saturation < 0.4 && !isBlackDominant && !isWhiteDominant) {
-          const { h } = rgbToHsl(r, g, b);
-          // 增強飽和度並保持適當亮度
-          const enhancedColor = hslToRgb(h, Math.min(0.7, saturation * 1.8), 
-            l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l));
-          return enhancedColor;
-        }
+        
+        console.log('dominantColor')
         
         return { r, g, b };
       }
@@ -430,49 +503,11 @@
       let { r, g, b, saturation, l } = bestColor[1];
       
       // 避免太灰的顏色
-      if (saturation < 0.4 && !isBlackDominant && !isWhiteDominant) {
-        const { h } = rgbToHsl(r, g, b);
-        // 增強飽和度並保持適當亮度
-        const enhancedColor = hslToRgb(h, Math.min(0.7, saturation * 1.8), 
-          l < 0.2 ? 0.3 : (l > 0.8 ? 0.7 : l));
-        return enhancedColor;
-      }
-
+      
+      console.log( r, g, b)
       return { r, g, b };
     }
-    function adjustColor(c) {
-      // 計算平均亮度
-      const avg = (c.r + c.g + c.b) / 3;
-      
-      // 檢查是否是接近純黑或純白
-      const isNearBlack = avg < 40;
-      const isNearWhite = avg > 215;
-      
-      // 避免純黑色
-      if (isNearBlack) {
-        c.r = Math.max(40, c.r);
-        c.g = Math.max(40, c.g);
-        c.b = Math.max(40, c.b);
-      } 
-      // 避免純白色
-      else if (isNearWhite) {
-        c.r = Math.min(215, c.r);
-        c.g = Math.min(215, c.g);
-        c.b = Math.min(215, c.b);
-      }
-      // 調整過亮或過暗的顏色
-      else if (avg > 200) {
-        c.r = Math.max(30, c.r * 0.8);
-        c.g = Math.max(30, c.g * 0.8);
-        c.b = Math.max(30, c.b * 0.8);
-      } else if (avg < 50) {
-        c.r = Math.min(225, c.r * 1.5);
-        c.g = Math.min(225, c.g * 1.5);
-        c.b = Math.min(225, c.b * 1.5);
-      }
-      
-      return c;
-    };
+    
     function getSafeTextColor(bg) {
   
       const brightness = (bg.r * 299 + bg.g * 587 + bg.b * 114) / 1000;
@@ -540,6 +575,7 @@
     }
 
     function renderTextOnly(track) {
+
       const app = document.getElementById('app');
       const nameEl = app.querySelector('.track-name');
       const albumEl = app.querySelector('.album-name');
@@ -551,18 +587,21 @@
       const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
 
       if (nameEl && albumEl && artistEl) {
-        nameEl.href = trackUrl;
-        nameEl.textContent = track.name;
-        
-        albumEl.href = albumUrl;
-        albumEl.textContent = track.album['#text'];
-        
-        artistEl.href = artistUrl;
-        artistEl.textContent = track.artist['#text'];
+          nameEl.href = trackUrl;
+          nameEl.textContent = track.name;
+          
+          albumEl.href = albumUrl;
+          albumEl.textContent = track.album['#text'];
+          
+          artistEl.href = artistUrl;
+          artistEl.textContent = track.artist['#text'];
+          
+          // 重新載入歌詞
+          loadLyrics(track);
       } else {
-        renderFull(track);
+          renderFull(track);
       }
-    }
+  }
 
     function renderFull(track) {
         const app = document.getElementById('app');
@@ -578,29 +617,7 @@
 
         img.onload = () => {
           const rawColor = getSaturatedDominantColor(img);
-
-          // 放寬灰色判定
-          const isGray = Math.abs(rawColor.r - rawColor.g) < 20 &&
-                        Math.abs(rawColor.g - rawColor.b) < 20 &&
-                        Math.abs(rawColor.r - rawColor.b) < 20;
-
-          // 深黑或淺白不調整
-          const isManualColor =
-            (rawColor.r === 10 && rawColor.g === 10 && rawColor.b === 10) ||
-            (rawColor.r === 240 && rawColor.g === 240 && rawColor.b === 240);
-
-          // 額外加深灰色（在 isGray 時強制降低亮度）
-          if (isGray) {
-            let hsl = rgbToHsl(rawColor.r, rawColor.g, rawColor.b);
-            hsl.l = Math.min(hsl.l, 0.25); // 越小越暗
-            const darker = hslToRgb(hsl.h, hsl.s, hsl.l);
-            rawColor.r = darker.r;
-            rawColor.g = darker.g;
-            rawColor.b = darker.b;
-          }
-
-          let color = (isGray || isManualColor) ? rawColor : adjustColor(rawColor);
-
+          let color = rawColor;
           const textColor = getSafeTextColor(color);
           const bgColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
           const fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
@@ -608,52 +625,139 @@
           app.classList.add('fade-out');
 
           setTimeout(() => {
-          app.innerHTML = `
-            <div class="album-wrapper">
-              <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
-            </div>
-            <div class="track-info">
-              <a href="${trackUrl}" target="_blank" class="track-name">${track.name}</a>
-              <a href="${albumUrl}" target="_blank" class="album-name">${track.album['#text']}</a>
-              <a href="${artistUrl}" target="_blank" class="artist-name">${track.artist['#text']}</a>
-            </div>
-            <div class="lyrics" id="lyrics">載入歌詞中...</div>
-          `;
+            app.innerHTML = `
+              <div class="album-wrapper">
+                <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
+              </div>
+              <div class="track-info">
+                <a href="${trackUrl}" target="_blank" class="track-name">${track.name}</a>
+                <a href="${albumUrl}" target="_blank" class="album-name">${track.album['#text']}</a>
+                <a href="${artistUrl}" target="_blank" class="artist-name">${track.artist['#text']}</a>
+                <div class="lyrics" id="lyrics"> </div>
+              </div>
+              
+            `;
 
-          document.body.style.backgroundColor = bgColor;
-          document.body.style.color = fontColor;
-          app.classList.remove('fade-out');
-          app.classList.add('fade');
-          currentAlbumImgUrl = albumImgUrl;
+            document.body.style.backgroundColor = bgColor;
+            document.body.style.color = fontColor;
+            app.classList.remove('fade-out');
+            app.classList.add('fade');
+            currentAlbumImgUrl = albumImgUrl;
 
-          const links = app.querySelectorAll('a');
-          links.forEach(link => {
-            link.style.color = fontColor;
-            link.style.textDecoration = 'none';
-          });
-
-          // 使用原始文字查詢 lrclib 歌詞
-          const queryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=${encodeURIComponent(track.album['#text'])}`;
-
-          fetch(queryUrl)
-            .then(res => res.json())
-            .then(data => {
-              const lyricsDiv = document.getElementById('lyrics');
-              if (data?.syncedLyrics || data?.plainLyrics) {
-                lyricsDiv.textContent = data.syncedLyrics || data.plainLyrics;
-              } else {
-                lyricsDiv.textContent = '找不到歌詞。';
-              }
-            })
-            .catch(err => {
-              console.error('歌詞抓取錯誤:', err);
-              const lyricsDiv = document.getElementById('lyrics');
-              if (lyricsDiv) lyricsDiv.textContent = '無法載入歌詞。';
+            const links = app.querySelectorAll('a');
+            links.forEach(link => {
+              link.style.color = fontColor;
+              link.style.textDecoration = 'none';
             });
-        } , 800);
-      }
-      };
 
+            // 載入歌詞
+            loadLyrics(track);
+
+          }, 800);
+          console.log('rawColor', rawColor);
+        }
+    }
+
+    // 新增獨立的歌詞載入函數
+    function loadLyrics(track) {
+    const lyricsDiv = document.getElementById('lyrics');
+    if (!lyricsDiv) return;
+    
+    // Reset any existing lyrics interval
+    if (window.lyricsInterval) {
+        clearInterval(window.lyricsInterval);
+    }
+    
+    // First attempt: full query with artist, track and album
+    const fullQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=${encodeURIComponent(track.album['#text'])}`;
+    
+    fetch(fullQueryUrl)
+        .then(res => res.json())
+        .then(data => {
+            if (data?.syncedLyrics || data?.plainLyrics) {
+                
+                displayLyrics(data, lyricsDiv);
+            } else {
+                
+                
+                const simpleQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}`;
+                
+                fetch(simpleQueryUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data?.syncedLyrics || data?.plainLyrics) {
+                            displayLyrics(data, lyricsDiv);
+                        
+                        }
+                    })
+                    .catch(err => {
+                        console.error('第二次歌詞抓取錯誤:', err);
+                        lyricsDiv.textContent = '無法載入歌詞。';
+                    });
+            }
+        })
+        .catch(err => {
+            console.error('歌詞抓取錯誤:', err);
+            
+            lyricsDiv.textContent = '再次獲取歌詞...';
+            const simpleQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=$&track_name=${encodeURIComponent(track.name)}`;
+            
+            fetch(simpleQueryUrl)
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.syncedLyrics || data?.plainLyrics) {
+                        displayLyrics(data, lyricsDiv);
+                    } else {
+                        lyricsDiv.textContent = '找不到歌詞。';
+                    }
+                })
+                .catch(err => {
+                    console.error('第二次歌詞抓取錯誤:', err);
+                    lyricsDiv.textContent = '無法載入歌詞。';
+                });
+        });
+}
+
+
+    function displayLyrics(data, lyricsDiv) {
+        if (data.syncedLyrics) {
+            const lines = parseLRC(data.syncedLyrics);
+            lyricsDiv.innerHTML = lines.map(l => `<div class="lyrics-line" data-time="${l.time}">${l.text}</div>`).join('');
+
+            let currentTime = 2;
+            window.lyricsInterval = setInterval(() => {
+                currentTime += 0.5;
+                const allLines = [...document.querySelectorAll('.lyrics-line')];
+                let currentLineIndex = -1;
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (currentTime >= lines[i].time) currentLineIndex = i;
+                }
+
+                allLines.forEach((line, index) => {
+                    line.classList.toggle('active', index === currentLineIndex);
+
+                    if (index === currentLineIndex) {
+                        line.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                });
+            }, 500);
+        } else if (data.plainLyrics) {
+            lyricsDiv.textContent = data.plainLyrics;
+        }
+    }
+
+    // 歌詞解析函數
+    function parseLRC(lrc) {
+        const lines = lrc.split('\n');
+        const pattern = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/;
+        return lines.map(line => {
+            const match = line.match(pattern);
+            if (!match) return null;
+            const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+            return { time, text: match[3].trim() };
+        }).filter(Boolean);
+    }
     async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
 
@@ -729,6 +833,7 @@
         }
       }, 3000);
     });
+    
   </script>
 </body>
 </html>
