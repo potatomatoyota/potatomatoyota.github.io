@@ -402,7 +402,7 @@
         const [r, g, b] = key.split(',').map(Number);
         
         // 完全排除黑色
-        const isNearBlack = r < 40 && g < 40 && b < 40;
+        const isNearBlack = r < 50 && g < 50 && b < 50;
         if (isNearBlack) return false;
         
         // 處理白色
@@ -456,8 +456,8 @@
         const bIsGray = Math.abs(bR - bG) < 20 && Math.abs(bG - bB) < 20 && Math.abs(bR - bB) < 20;
         
         // 為灰色調降低權重
-        const aWeight = aIsGray ? 0.5 : 1;
-        const bWeight = bIsGray ? 0.5 : 1;
+        const aWeight = aIsGray ? 0.3 : 1;
+        const bWeight = bIsGray ? 0.3 : 1;
         
         
         const aOccupancyFactor = Math.pow(a[1].count / totalPixels, 1.5) * 3;
@@ -581,27 +581,25 @@
       const albumEl = app.querySelector('.album-name');
       const artistEl = app.querySelector('.artist-name');
 
-      // 創建Last.fm的URL
-      const trackUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/_/${encodeURIComponent(track.name)}`;
-      const albumUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/${encodeURIComponent(track.album['#text'])}`;
-      const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
+      const isNowPlaying = track['@attr']?.nowplaying === 'true';
 
       if (nameEl && albumEl && artistEl) {
-          nameEl.href = trackUrl;
-          nameEl.textContent = track.name;
-          
-          albumEl.href = albumUrl;
-          albumEl.textContent = track.album['#text'];
-          
-          artistEl.href = artistUrl;
-          artistEl.textContent = track.artist['#text'];
-          
-          // 重新載入歌詞
+        nameEl.textContent = track.name;
+        albumEl.textContent = track.album['#text'];
+        artistEl.textContent = track.artist['#text'];
+
+        if (isNowPlaying) {
           loadLyrics(track);
+          const lyricsDiv = document.getElementById('lyrics');
+          if (lyricsDiv) lyricsDiv.style.display = 'flex';
+        } else {
+          hideLyrics(); // This correctly calls the function to hide lyrics
+        }
       } else {
-          renderFull(track);
+        renderFull(track);
       }
-  }
+    }
+
 
     function renderFull(track) {
         const app = document.getElementById('app');
@@ -633,9 +631,8 @@
                 <a href="${trackUrl}" target="_blank" class="track-name">${track.name}</a>
                 <a href="${albumUrl}" target="_blank" class="album-name">${track.album['#text']}</a>
                 <a href="${artistUrl}" target="_blank" class="artist-name">${track.artist['#text']}</a>
-                <div class="lyrics" id="lyrics"> </div>
+                <div class="lyrics" id="lyrics"></div>
               </div>
-              
             `;
 
             document.body.style.backgroundColor = bgColor;
@@ -650,13 +647,23 @@
               link.style.textDecoration = 'none';
             });
 
-            // 載入歌詞
-            loadLyrics(track);
+            const isNowPlaying = track['@attr']?.nowplaying === 'true';
+
+            if (isNowPlaying) {
+              loadLyrics(track);
+            } else {
+              hideLyrics(); 
+            }
 
           }, 800);
+
+        };
+
+
+
           console.log('rawColor', rawColor);
         }
-    }
+    
 
     // 新增獨立的歌詞載入函數
     function loadLyrics(track) {
@@ -720,6 +727,9 @@
 
 
     function displayLyrics(data, lyricsDiv) {
+        // 首先確保歌詞區域是可見的
+        lyricsDiv.style.visibility = 'visible';
+        
         if (data.syncedLyrics) {
             const lines = parseLRC(data.syncedLyrics);
             lyricsDiv.innerHTML = lines.map(l => `<div class="lyrics-line" data-time="${l.time}">${l.text}</div>`).join('');
@@ -825,6 +835,8 @@
 
       isFirstLoad = false;
 
+      
+
       // 設定定時器定期檢查更新
       setInterval(async () => {
         const song = await getSongInfo();
@@ -833,7 +845,19 @@
         }
       }, 3000);
     });
-    
+
+    function hideLyrics() {
+      const lyricsDiv = document.getElementById('lyrics');
+      if (lyricsDiv) {
+        lyricsDiv.innerHTML = ''; // 清空內容
+        lyricsDiv.style.visibility = 'hidden'; // 使用 visibility: hidden 而不是 display: none
+        lyricsDiv.style.height = '3rem'; // 保持原來的高度
+      }
+      if (window.lyricsInterval) {
+        clearInterval(window.lyricsInterval);
+        window.lyricsInterval = null;
+      }
+    }
   </script>
 </body>
 </html>
