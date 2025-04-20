@@ -1,53 +1,42 @@
 <!DOCTYPE html>
- <html lang="zh-TW">
+<html lang="zh-TW">
 <head>
-  
-
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <title>lastfm</title>
-  
-  <style>
-    *{
 
+  <style>
+    * {
       font-family: 'Noto Sans TC', 'Noto Sans JP', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    /*手機*/
     @media (max-width: 480px) {
       .album-wrapper {
         max-width: 250px !important;
-
         width: 70vw !important;
         aspect-ratio: 1 / 1;
       }
-
       .track-name {
         font-size: 1.4rem !important;
       }
-
       .album-name {
         font-size: 1.1rem !important;
       }
-
       .artist-name {
         font-size: 1rem !important;
       }
-
       .container {
         padding: 1rem !important;
       }
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     body {
       width: 100vw;
       height: 100vh;
@@ -60,7 +49,6 @@
       background-color: #000000;
       color: #ffffff;
     }
-
     .container {
       display: flex;
       flex-direction: column;
@@ -70,9 +58,8 @@
       width: 100%;
       padding: 2rem;
       transition: opacity 1s ease;
-      margin-top: 6rem;/*上下移*/
+      margin-top: 6rem;
     }
-
     .album-wrapper {
       position: relative;
       width: 100%;
@@ -80,7 +67,6 @@
       aspect-ratio: 1 / 1;
       margin-bottom: 1.2rem;
     }
-
     .album-cover {
       position: absolute;
       top: 0;
@@ -92,12 +78,10 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
     }
-    
     .album-cover:hover {
       transform: translateY(-5px) scale(1.02);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
     }
-
     .track-info {
       display: flex;
       flex-direction: column;
@@ -107,43 +91,32 @@
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
     }
     .track-name {
-      
-      
       font-size: 2rem;
       font-weight: 800;
       margin-bottom: 0.15rem;
     }
-
     .album-name {
-      
       font-size: 1.5rem;
       opacity: 0.9;
       margin-bottom: 0.15rem;
     }
-
     .artist-name {
-      
       font-size: 1.25rem;
       opacity: 0.8;
     }
-
     .loading {
       font-size: 1.5rem;
     }
-
     .error-message {
       color: #ff6b6b;
       margin-top: 1rem;
     }
-
     .fade {
       opacity: 1;
     }
-
     .fade-out {
       opacity: 0;
     }
-
     .lyrics {
       position: relative; 
       margin-top: 1.5rem;
@@ -157,7 +130,6 @@
       align-items: center;
       justify-content: center;
     }
-
     .lyrics-line {
       position: absolute;
       width: 100%;
@@ -166,14 +138,17 @@
       transition: opacity 0.3s ease;
       padding: 0;
     }
-
     .lyrics-line.active {
       opacity: 1;
     }
-
-  
-
   </style>
+  <script type="module">
+    import { loadLyrics, setTrackFetcher } from './js/lyrics-loader.js';
+
+    window.loadLyrics = loadLyrics;
+    setTrackFetcher(() => window.currentTrackData);
+
+  </script>
 </head>
 <body>
   <div class="container fade" id="app">
@@ -456,8 +431,8 @@
         const bIsGray = Math.abs(bR - bG) < 20 && Math.abs(bG - bB) < 20 && Math.abs(bR - bB) < 20;
         
         // 為灰色調降低權重
-        const aWeight = aIsGray ? 0.3 : 1;
-        const bWeight = bIsGray ? 0.3 : 1;
+        const aWeight = aIsGray ? 0.5 : 1;
+        const bWeight = bIsGray ? 0.5 : 1;
         
         
         const aOccupancyFactor = Math.pow(a[1].count / totalPixels, 1.5) * 3;
@@ -661,118 +636,24 @@
 
 
 
-          console.log('rawColor', rawColor);
+         
         }
     
 
-    // 新增獨立的歌詞載入函數
-    function loadLyrics(track) {
-    const lyricsDiv = document.getElementById('lyrics');
-    if (!lyricsDiv) return;
-    
-    // Reset any existing lyrics interval
-    if (window.lyricsInterval) {
-        clearInterval(window.lyricsInterval);
-    }
-    
-    // First attempt: full query with artist, track and album
-    const fullQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=${encodeURIComponent(track.album['#text'])}`;
-    
-    fetch(fullQueryUrl)
-        .then(res => res.json())
-        .then(data => {
-            if (data?.syncedLyrics || data?.plainLyrics) {
-                
-                displayLyrics(data, lyricsDiv);
-            } else {
-                
-                
-                const simpleQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}`;
-                
-                fetch(simpleQueryUrl)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data?.syncedLyrics || data?.plainLyrics) {
-                            displayLyrics(data, lyricsDiv);
-                        
-                        }
-                    })
-                    .catch(err => {
-                        console.error('第二次歌詞抓取錯誤:', err);
-                        lyricsDiv.textContent = '無法載入歌詞。';
-                    });
-            }
-        })
-        .catch(err => {
-            console.error('歌詞抓取錯誤:', err);
-            
-            lyricsDiv.textContent = '再次獲取歌詞...';
-            const simpleQueryUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=$&track_name=${encodeURIComponent(track.name)}`;
-            
-            fetch(simpleQueryUrl)
-                .then(res => res.json())
-                .then(data => {
-                    if (data?.syncedLyrics || data?.plainLyrics) {
-                        displayLyrics(data, lyricsDiv);
-                    } else {
-                        lyricsDiv.textContent = '找不到歌詞。';
-                    }
-                })
-                .catch(err => {
-                    console.error('第二次歌詞抓取錯誤:', err);
-                    lyricsDiv.textContent = '無法載入歌詞。';
-                });
-        });
-}
+   
+   
 
 
-    function displayLyrics(data, lyricsDiv) {
-        // 首先確保歌詞區域是可見的
-        lyricsDiv.style.visibility = 'visible';
-        
-        if (data.syncedLyrics) {
-            const lines = parseLRC(data.syncedLyrics);
-            lyricsDiv.innerHTML = lines.map(l => `<div class="lyrics-line" data-time="${l.time}">${l.text}</div>`).join('');
+   
 
-            let currentTime = 2;
-            window.lyricsInterval = setInterval(() => {
-                currentTime += 0.5;
-                const allLines = [...document.querySelectorAll('.lyrics-line')];
-                let currentLineIndex = -1;
-
-                for (let i = 0; i < lines.length; i++) {
-                    if (currentTime >= lines[i].time) currentLineIndex = i;
-                }
-
-                allLines.forEach((line, index) => {
-                    line.classList.toggle('active', index === currentLineIndex);
-
-                    if (index === currentLineIndex) {
-                        line.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                    }
-                });
-            }, 500);
-        } else if (data.plainLyrics) {
-            lyricsDiv.textContent = data.plainLyrics;
-        }
-    }
-
-    // 歌詞解析函數
-    function parseLRC(lrc) {
-        const lines = lrc.split('\n');
-        const pattern = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/;
-        return lines.map(line => {
-            const match = line.match(pattern);
-            if (!match) return null;
-            const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
-            return { time, text: match[3].trim() };
-        }).filter(Boolean);
-    }
+  
     async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
 
       const track = songData.track;
       const isNowPlaying = track['@attr']?.nowplaying === 'true';
+      window.currentTrackData = track;
+
       
       // 如果不是首次載入，只在正在播放時更新
       if (!isFirstLoad && !isNowPlaying) return;
