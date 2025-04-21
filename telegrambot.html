@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Telegram Bot 訊息發送</title>
+  <style>
+    :root {
+      --bg-color: #f5f6fa;
+      --text-color: #333;
+      --card-bg: #ffffff;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --btn-bg: #2f80ed;
+      --btn-hover: #1c60c6;
+    }
+    [data-theme="dark"] {
+      --bg-color: #121212;
+      --text-color: #e0e0e0;
+      --card-bg: #1e1e1e;
+      --input-bg: #2a2a2a;
+      --input-border: #555;
+      --btn-bg: #4a75d1;
+      --btn-hover: #2e4e9f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+    .toggle {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .toggle input {
+      display: none;
+    }
+    .toggle-label {
+      width: 40px;
+      height: 20px;
+      background: #ccc;
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.3s;
+    }
+    [data-theme="dark"] .toggle-label {
+      background: #666;
+    }
+    .toggle-label::after {
+      content: '';
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+    input:checked + .toggle-label::after {
+      transform: translateX(20px);
+    }
+    input:checked + .toggle-label {
+      background: #4a75d1;
+    }
+    input:checked + .toggle-label:hover {
+      background: #2e4e9f;
+    }
+    input:checked ~ body {
+      /* not used */
+    }
+    input:checked ~ .container {
+      /* not used */
+    }
+    input + .toggle-label:hover {
+      background: #bbb;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: var(--btn-bg);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: var(--btn-hover);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <label class="toggle">
+      <input type="checkbox" id="modeToggle">
+      <span class="toggle-label"></span>
+    </label>
+    <h2>傳訊息給我</h2>
+    <input id="msg" type="text" placeholder="輸入訊息" />
+    <button onclick="send()">送出</button>
+  </div>
+
+  <script>
+    // 深色模式設定
+    const toggle = document.getElementById('modeToggle');
+    const root = document.documentElement;
+    // 讀取或預設
+    const saved = localStorage.getItem('theme') || 'light';
+    root.setAttribute('data-theme', saved);
+    toggle.checked = saved === 'dark';
+
+    toggle.addEventListener('change', () => {
+      const mode = toggle.checked ? 'dark' : 'light';
+      root.setAttribute('data-theme', mode);
+      localStorage.setItem('theme', mode);
+    });
+
+    // 發訊息函式
+    async function send() {
+      const msgEl = document.getElementById('msg');
+      const msg = msgEl.value.trim();
+      if (!msg) {
+        alert('請輸入訊息！');
+        return;
+      }
+
+      try {
+        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('成功送出！');
+          msgEl.value = '';
+        } else {
+          alert('發送失敗：' + JSON.stringify(data));
+        }
+      } catch (err) {
+        alert('錯誤：' + err);
+      }
+    }
+  </script>
+</body>
+</html>

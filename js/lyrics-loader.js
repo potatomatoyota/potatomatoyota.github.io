@@ -6,6 +6,7 @@ let wasPlaying = false; // 記錄上一輪的播放狀態
 let lyricsPaused = false; // 追蹤歌詞是否處於暫停狀態
 let currentLyricsTime = 0; // 記錄當前歌詞時間位置
 let lastLyricsLineIndex = -1;
+let unsyncedLyricsTimer = null;
 
 setInterval(() => {
   if (!getTrackStatus) return;
@@ -32,6 +33,51 @@ setInterval(() => {
   wasPlaying = isNowPlaying;
 }, 300);
 
+
+export function displayUnsyncedLyrics(lines) {
+  const lyricsEl = document.getElementById('lyrics');
+  if (!lyricsEl) return;
+
+  console.log('顯示非同步歌詞，行數:', lines.length);
+  
+  lyricsEl.innerHTML = '';
+  lyricsEl.style.visibility = 'visible'; // 確保可見
+  lyricsEl.style.height = 'auto'; // 調整高度以容納所有歌詞
+  lyricsEl.style.display = 'flex';
+  
+  if (!lyricsEl) return;
+
+  lyricsEl.innerHTML = '';
+  lyricsEl.style.visibility = 'visible'; // 確保可見
+  lyricsEl.style.height = 'auto'; // 調整高度以容納所有歌詞
+
+  let currentIndex = 0;
+
+  // 建立每句歌詞元素
+  const lineEls = lines.map(line => {
+    const el = document.createElement('div');
+    el.className = 'lyrics-line';
+    el.textContent = line;
+    lyricsEl.appendChild(el);
+    return el;
+  });
+
+  function showNextLine() {
+    console.log('切換到下一行歌詞', currentIndex); // 添加日誌
+    lineEls.forEach(el => el.classList.remove('active'));
+    if (lineEls[currentIndex]) {
+      lineEls[currentIndex].classList.add('active');
+    }
+    currentIndex = (currentIndex + 1) % lineEls.length;
+  }
+
+  showNextLine(); // 初始顯示第一行
+
+  // 清除舊的 timer，避免多重執行
+  if (unsyncedLyricsTimer) clearInterval(unsyncedLyricsTimer);
+  unsyncedLyricsTimer = setInterval(showNextLine, 3000);
+  console.log('非同步歌詞計時器已設置', unsyncedLyricsTimer); // 添加日誌
+}
 export function setTrackFetcher(fn) {
   getTrackStatus = fn;
 }
@@ -72,18 +118,24 @@ export async function loadLyrics(track) {
   }
 
   lyricsDiv.textContent = '找不到歌詞。';
+
+
+  
 }
 
 function displayLyrics(data, lyricsDiv) {
+  console.log('顯示歌詞，類型:', data.syncedLyrics ? 'synced' : 'plain');
+  
   lyricsDiv.style.visibility = 'visible';
+  lyricsDiv.style.height = 'auto'; // 確保高度正確
 
   if (data.syncedLyrics) {
-    const lines = parseLRC(data.syncedLyrics);
-    lyricsDiv.innerHTML = lines.map(l => `<div class="lyrics-line" data-time="${l.time}">${l.text}</div>`).join('');
-
-    startLyricsInterval(lines);
+    // 同步歌詞處理...
   } else if (data.plainLyrics) {
-    lyricsDiv.textContent = data.plainLyrics;
+    console.log('處理非同步歌詞，長度:', data.plainLyrics.length);
+    const lines = data.plainLyrics.split(/\r?\n/).filter(line => line.trim());
+    console.log('處理後的行數:', lines.length);
+    displayUnsyncedLyrics(lines);
   }
 }
 
@@ -136,6 +188,10 @@ function clearExistingLyrics() {
   if (window.lyricsInterval) {
     clearInterval(window.lyricsInterval);
     window.lyricsInterval = null;
+  }
+  if (unsyncedLyricsTimer) {
+    clearInterval(unsyncedLyricsTimer);
+    unsyncedLyricsTimer = null;
   }
 }
 
