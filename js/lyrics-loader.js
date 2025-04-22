@@ -7,6 +7,7 @@ let lyricsPaused = false; // 追蹤歌詞是否處於暫停狀態
 let currentLyricsTime = 0; // 記錄當前歌詞時間位置
 let lastLyricsLineIndex = -1;
 let unsyncedLyricsTimer = null;
+let pauseHideTimer = null; // 新增: 用於暫停後隱藏歌詞的計時器
 
 setInterval(() => {
   if (!getTrackStatus) return;
@@ -98,6 +99,9 @@ export async function loadLyrics(track) {
   clearExistingLyrics();
   currentLyricsTime = 0; // 重置歌詞時間
   lyricsPaused = false; // 重置暫停狀態
+  
+  // 確保歌詞區域顯示
+  showLyricsContainer();
 
   const urls = [
     `https://lrclib.net/api/get?artist_name=${encodeURIComponent(track.artist['#text'])}&track_name=${encodeURIComponent(track.name)}&album_name=${encodeURIComponent(track.album['#text'])}`,
@@ -118,19 +122,27 @@ export async function loadLyrics(track) {
   }
 
   lyricsDiv.textContent = '找不到歌詞。';
-
-
-  
 }
 
 function displayLyrics(data, lyricsDiv) {
   console.log('顯示歌詞，類型:', data.syncedLyrics ? 'synced' : 'plain');
   
-  lyricsDiv.style.visibility = 'visible';
-  lyricsDiv.style.height = 'auto'; // 確保高度正確
-
+  showLyricsContainer(); // 確保歌詞容器可見
+  
   if (data.syncedLyrics) {
-    // 同步歌詞處理...
+    if (data.syncedLyrics) {
+      const lines = parseLRC(data.syncedLyrics);
+      lyricsDiv.innerHTML = '';
+      const lineEls = lines.map(({ time, text }) => {
+        const el = document.createElement('div');
+        el.className = 'lyrics-line';
+        el.textContent = text;
+        el.setAttribute('data-time', time.toFixed(2));
+        lyricsDiv.appendChild(el);
+        return el;
+      });
+      startLyricsInterval(lines);
+    }
   } else if (data.plainLyrics) {
     console.log('處理非同步歌詞，長度:', data.plainLyrics.length);
     const lines = data.plainLyrics.split(/\r?\n/).filter(line => line.trim());
@@ -173,6 +185,7 @@ function updateLyricsDisplay(lines, currentTime) {
 
   lastLyricsLineIndex = currentLineIndex;
 }
+
 function parseLRC(lrc) {
   const lines = lrc.split('\n');
   const pattern = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/;
@@ -193,18 +206,93 @@ function clearExistingLyrics() {
     clearInterval(unsyncedLyricsTimer);
     unsyncedLyricsTimer = null;
   }
+  // 清除暫停隱藏計時器
+  if (pauseHideTimer) {
+    clearTimeout(pauseHideTimer);
+    pauseHideTimer = null;
+  }
 }
 
+
+function hideLyricsContainer() {
+  const lyricsDiv = document.getElementById('lyrics');
+  if (lyricsDiv) {
+    // 只修改透明度，保持空間佔位
+    lyricsDiv.style.opacity = '0';
+    
+    // 延遲設置 visibility:hidden，等待淡出完成
+    setTimeout(() => {
+      // 只有在仍然是暫停狀態時才設置隱藏
+      if (lyricsPaused) {
+        lyricsDiv.style.visibility = 'hidden';
+      }
+    }, 500);
+  }
+}
+
+
+function showLyricsContainer() {
+  const lyricsDiv = document.getElementById('lyrics');
+  if (lyricsDiv) {
+    // 確保元素可見
+    lyricsDiv.style.visibility = 'visible';
+    
+    // 使用 setTimeout 確保瀏覽器有時間處理 visibility 變更
+    setTimeout(() => {
+      lyricsDiv.style.opacity = '0.9';
+    }, 10);
+  }
+}
+
+
+export function hideLyrics() {
+  const lyricsDiv = document.getElementById('lyrics');
+  if (lyricsDiv) {
+    lyricsDiv.innerHTML = '';
+    lyricsDiv.style.visibility = 'hidden';
+    lyricsDiv.style.opacity = '0';
+    
+  }
+  if (window.lyricsInterval) {
+    clearInterval(window.lyricsInterval);
+    window.lyricsInterval = null;
+  }
+  if (pauseHideTimer) {
+    clearTimeout(pauseHideTimer);
+    pauseHideTimer = null;
+  }
+  lyricsPaused = false;
+  currentLyricsTime = 0;
+}
 // 暫停歌詞
 function pauseLyrics() {
   lyricsPaused = true;
-  // 不清除歌詞內容，只暫停更新
+  
+  // 清除任何現有的暫停隱藏計時器
+  if (pauseHideTimer) {
+    clearTimeout(pauseHideTimer);
+  }
+  
+  // 設置 2 秒後隱藏歌詞的計時器
+  pauseHideTimer = setTimeout(() => {
+    console.log('歌詞暫停 2 秒後隱藏');
+    hideLyricsContainer();
+  }, 2000);
 }
 
-//恢復歌詞函數
+// 恢復歌詞函數
 function resumeLyrics() {
   if (!lyricsPaused) return;
   lyricsPaused = false;
+  
+  // 清除暫停隱藏計時器
+  if (pauseHideTimer) {
+    clearTimeout(pauseHideTimer);
+    pauseHideTimer = null;
+  }
+  
+  // 重新顯示歌詞容器
+  showLyricsContainer();
 
   // 防止多個 interval 同時執行
   if (window.lyricsInterval) return;
@@ -219,20 +307,4 @@ function resumeLyrics() {
     });
     startLyricsInterval(lines);
   }
-}
-
-
-export function hideLyrics() {
-  const lyricsDiv = document.getElementById('lyrics');
-  if (lyricsDiv) {
-    lyricsDiv.innerHTML = '';
-    lyricsDiv.style.visibility = 'hidden';
-    lyricsDiv.style.height = '3rem';
-  }
-  if (window.lyricsInterval) {
-    clearInterval(window.lyricsInterval);
-    window.lyricsInterval = null;
-  }
-  lyricsPaused = false;
-  currentLyricsTime = 0;
 }

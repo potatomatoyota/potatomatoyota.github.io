@@ -56,7 +56,6 @@
       -moz-user-select: none;
       -ms-user-select: none;
     }
-
     .toggle input {
       display: none;
     }
@@ -91,12 +90,6 @@
     input:checked + .toggle-label:hover {
       background: #2e4e9f;
     }
-    input:checked ~ body {
-      /* not used */
-    }
-    input:checked ~ .container {
-      /* not used */
-    }
     input + .toggle-label:hover {
       background: #bbb;
     }
@@ -113,6 +106,26 @@
       background: var(--input-bg);
       color: var(--text-color);
     }
+    .upload-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: var(--btn-bg);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s ease;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .upload-btn:hover {
+      background-color: var(--btn-hover);
+    }
+    #imageInput {
+      display: none;
+    }
     button {
       padding: 12px 20px;
       font-size: 1rem;
@@ -123,6 +136,7 @@
       cursor: pointer;
       width: 100%;
       transition: background-color 0.2s ease;
+      margin-bottom: 0.5rem;
     }
     button:hover {
       background-color: var(--btn-hover);
@@ -137,49 +151,113 @@
     </label>
     <h2>傳訊息給我</h2>
     <input id="msg" type="text" placeholder="輸入訊息" />
-    <button onclick="send()">送出</button>
+    <button id="sendTextBtn" onclick="sendText()">送出文字</button>
+  
+    <label for="imageInput" class="upload-btn">選擇圖片</label>
+    <input id="imageInput" type="file" accept="image/*" onchange="previewImage()" />
+    <img id="preview" style="max-width: 100%; margin: 10px 0; display: none; border-radius: 8px;" />
+    <button id="sendImageBtn" onclick="sendImage()">送出圖片</button>
+  
+    <div id="status" style="margin-top: 10px; font-size: 0.9rem;"></div>
   </div>
-
+  
   <script>
-    // 深色模式設定
     const toggle = document.getElementById('modeToggle');
     const root = document.documentElement;
-    // 讀取或預設
     const saved = localStorage.getItem('theme') || 'light';
     root.setAttribute('data-theme', saved);
     toggle.checked = saved === 'dark';
-
+  
     toggle.addEventListener('change', () => {
       const mode = toggle.checked ? 'dark' : 'light';
       root.setAttribute('data-theme', mode);
       localStorage.setItem('theme', mode);
     });
-
-    // 發訊息函式
-    async function send() {
-      const msgEl = document.getElementById('msg');
+  
+    function showStatus(msg, success = true) {
+      const status = document.getElementById("status");
+      status.style.color = success ? "green" : "red";
+      status.innerText = msg;
+    }
+  
+    async function sendText() {
+      const btn = document.getElementById("sendTextBtn");
+      const msgEl = document.getElementById("msg");
       const msg = msgEl.value.trim();
-      if (!msg) {
-        alert('請輸入訊息！');
-        return;
-      }
-
+      if (!msg) return showStatus("請輸入訊息", false);
+  
+      btn.disabled = true;
+      btn.innerText = "傳送中...";
+  
       try {
-        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/', {
+        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/sendText', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
         });
         const data = await res.json();
         if (data.ok) {
-          alert('成功送出！');
+          showStatus("文字訊息已送出！");
           msgEl.value = '';
         } else {
-          alert('發送失敗：' + JSON.stringify(data));
+          showStatus("發送失敗：" + JSON.stringify(data), false);
         }
       } catch (err) {
-        alert('錯誤：' + err);
+        showStatus("錯誤：" + err.message, false);
       }
+  
+      btn.disabled = false;
+      btn.innerText = "送出文字";
+    }
+  
+    function previewImage() {
+      const fileInput = document.getElementById("imageInput");
+      const preview = document.getElementById("preview");
+      const file = fileInput.files[0];
+  
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          preview.src = reader.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = "none";
+      }
+    }
+  
+    async function sendImage() {
+      const btn = document.getElementById("sendImageBtn");
+      const fileInput = document.getElementById("imageInput");
+      const file = fileInput.files[0];
+      if (!file) return showStatus("請選擇圖片", false);
+  
+      btn.disabled = true;
+      btn.innerText = "傳送中...";
+  
+      const formData = new FormData();
+      formData.append("photo", file);
+  
+      try {
+        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/sendPhoto', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showStatus("圖片已送出！");
+          fileInput.value = '';
+          preview.style.display = "none";
+        } else {
+          showStatus("發送失敗：" + JSON.stringify(data), false);
+        }
+      } catch (err) {
+        showStatus("錯誤：" + err.message, false);
+      }
+  
+      btn.disabled = false;
+      btn.innerText = "送出圖片"; 
     }
   </script>
 </body>

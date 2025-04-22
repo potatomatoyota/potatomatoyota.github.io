@@ -224,8 +224,7 @@ export function rgbToHsl(r, g, b) {
       }
     }
 
-    const colorDiversity = colorMap.size / (totalPixels * 0.01);
-    const colorfulRatio = colorfulPixels / totalPixels;
+    
 
     
 
@@ -241,7 +240,7 @@ export function rgbToHsl(r, g, b) {
       if (isNearBlack) return false;
       
       // 處理白色
-      const isNearWhite = r > 225 && g > 225 && b > 225;
+      const isNearWhite = r >= 180 && g >= 180 && b >= 180;
       if (isNearWhite && !isWhiteDominant) {
         return false;
       }
@@ -310,7 +309,7 @@ export function rgbToHsl(r, g, b) {
     // 直接選擇超過30%的超高佔比顏色
     const dominantColor = topColors.find(color => color[1].count / totalPixels > 0.3);
     if (dominantColor) {
-      let { r, g, b, saturation, l } = dominantColor[1];
+      let { r, g, b} = dominantColor[1];
       
       
       console.log('dominantColor')
@@ -335,7 +334,7 @@ export function rgbToHsl(r, g, b) {
       return currentScore > bestScore ? current : best;
     }, topColors[0]);
 
-    let { r, g, b, saturation, l } = bestColor[1];
+    let { r, g, b,} = bestColor[1];
     
     // 避免太灰的顏色
     
