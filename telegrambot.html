@@ -189,6 +189,33 @@
       text-align: left;
       word-break: break-all;
     }
+    /* 拖放區域樣式 */
+    .drop-area {
+      border: 2px dashed var(--input-border);
+      border-radius: 8px;
+      padding: 30px 20px;
+      text-align: center;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+    }
+    .drop-area.active {
+      border-color: var(--btn-bg);
+      background-color: rgba(47, 128, 237, 0.1);
+    }
+    .drop-area-text {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .drop-area-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: var(--input-border);
+    }
+    .drop-area.active .drop-area-icon {
+      color: var(--btn-bg);
+    }
   </style>
 </head>
 <body>
@@ -211,7 +238,14 @@
     </div>
     
     <div id="file-tab" class="tab-content">
-      <label for="imageInput" class="upload-btn"style="margin-bottom: 8px;">選擇圖片（傳圖片點這個）</label>
+      <!-- 新增拖放區域 -->
+      <div id="dropArea" class="drop-area">
+        <div class="drop-area-icon">📁</div>
+        <div class="drop-area-text">拖放檔案到此處</div>
+        <div class="drop-area-text">或</div>
+      </div>
+      
+      <label for="imageInput" class="upload-btn" style="margin-bottom: 8px;">選擇圖片（傳圖片點這個）</label>
       <input id="imageInput" class="file-input" type="file" accept="image/*" onchange="handleImageSelection()" />
       <label for="fileInput" class="upload-btn">選擇檔案（如果要傳pdf點這個）</label>
       <input id="fileInput" class="file-input" type="file" onchange="previewFile()" />
@@ -314,6 +348,7 @@
       btn.disabled = false;
       btn.innerText = "送出文字";
     }
+    
     function handleImageSelection() {
       const imageInput = document.getElementById("imageInput");
       const fileInput = document.getElementById("fileInput");
@@ -329,6 +364,7 @@
         previewFile();
       }
     }
+    
     // 預覽文件
     function previewFile() {
       const fileInput = document.getElementById("fileInput");
@@ -421,12 +457,12 @@
       
       showProgressBar(false);
       btn.disabled = false;
-      btn.innerText = "送出檔案";
+      btn.innerText = "送出（按這個就發給我）";
     }
     
     // 分片上傳大檔案
     async function chunkedUpload(file, endpoint) {
-      const chunkSize = 4* 1024 * 1024; // 1MB 每片
+      const chunkSize = 4* 1024 * 1024; // 4MB 每片
       const totalChunks = Math.ceil(file.size / chunkSize);
       const fileId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); // 生成唯一的檔案ID
       
@@ -486,6 +522,67 @@
         } catch (error) {
           throw new Error(`分片 ${chunkIndex + 1}/${totalChunks} 上傳失敗: ${error.message}`);
         }
+      }
+    }
+    
+    // 設置拖放功能
+    const dropArea = document.getElementById('dropArea');
+    
+    // 防止瀏覽器預設行為
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // 拖曳效果
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropArea.classList.add('active');
+    }
+    
+    function unhighlight() {
+      dropArea.classList.remove('active');
+    }
+    
+    // 處理拖放
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (files.length > 0) {
+        const file = files[0]; // 只處理第一個檔案
+        
+        // 將檔案設置到 fileInput
+        const fileInput = document.getElementById('fileInput');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        
+        // 預覽檔案
+        previewFile();
+        
+        // 如果是圖片，也設置到 imageInput
+        if (file.type.startsWith('image/')) {
+          const imageInput = document.getElementById('imageInput');
+          imageInput.files = dataTransfer.files;
+        }
+        
+        // 顯示檔案已拖放的狀態
+        showStatus(`已選擇檔案: ${file.name}`);
       }
     }
   </script>
