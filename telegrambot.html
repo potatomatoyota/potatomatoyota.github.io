@@ -13,6 +13,8 @@
       --input-border: #ccc;
       --btn-bg: #2f80ed;
       --btn-hover: #1c60c6;
+      --progress-bg: #e0e0e0;
+      --progress-fill: #4caf50;
     }
     [data-theme="dark"] {
       --bg-color: #121212;
@@ -22,6 +24,8 @@
       --input-border: #555;
       --btn-bg: #4a75d1;
       --btn-hover: #2e4e9f;
+      --progress-bg: #444;
+      --progress-fill: #4caf50;
     }
     * { box-sizing: border-box; }
     body {
@@ -31,8 +35,9 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
+      padding: 20px 0;
     }
     .container {
       background: var(--card-bg);
@@ -40,7 +45,7 @@
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 90%;
-      max-width: 400px;
+      max-width: 450px;
       text-align: center;
       position: relative;
     }
@@ -51,10 +56,9 @@
       display: flex;
       align-items: center;
       cursor: pointer;
-      user-select: none;
       -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
+      user-select: none;
+      
     }
     .toggle input {
       display: none;
@@ -87,14 +91,9 @@
     input:checked + .toggle-label {
       background: #4a75d1;
     }
-    input:checked + .toggle-label:hover {
-      background: #2e4e9f;
-    }
-    input + .toggle-label:hover {
-      background: #bbb;
-    }
     h2 {
       margin-top: 0;
+      margin-bottom: 20px;
     }
     input[type="text"] {
       width: 100%;
@@ -123,7 +122,7 @@
     .upload-btn:hover {
       background-color: var(--btn-hover);
     }
-    #imageInput {
+    .file-input {
       display: none;
     }
     button {
@@ -141,6 +140,54 @@
     button:hover {
       background-color: var(--btn-hover);
     }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .progress-container {
+      width: 100%;
+      background-color: var(--progress-bg);
+      border-radius: 5px;
+      margin: 10px 0;
+      height: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background-color: var(--progress-fill);
+      transition: width 0.1s;
+    }
+    .tab-container {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--input-border);
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .tab.active {
+      border-bottom: 3px solid var(--btn-bg);
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .file-info {
+      font-size: 0.9rem;
+      margin: 10px 0;
+      text-align: left;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -149,19 +196,41 @@
       <input type="checkbox" id="modeToggle">
       <span class="toggle-label"></span>
     </label>
+    
     <h2>傳訊息給我</h2>
-    <input id="msg" type="text" placeholder="輸入訊息" />
-    <button id="sendTextBtn" onclick="sendText()">送出文字</button>
-  
-    <label for="imageInput" class="upload-btn">選擇圖片</label>
-    <input id="imageInput" type="file" accept="image/*" onchange="previewImage()" />
-    <img id="preview" style="max-width: 100%; margin: 10px 0; display: none; border-radius: 8px;" />
-    <button id="sendImageBtn" onclick="sendImage()">送出圖片</button>
-  
-    <div id="status" style="margin-top: 10px; font-size: 0.9rem;"></div>
+    
+    <div class="tab-container">
+      <div class="tab active" data-tab="text-tab">文字</div>
+      <div class="tab" data-tab="file-tab">檔案（傳圖片）</div>
+    </div>
+    
+    <div id="text-tab" class="tab-content active">
+      <input id="msg" type="text" placeholder="輸入訊息" />
+      <button id="sendTextBtn" onclick="sendText()">送出文字</button>
+    </div>
+    
+    <div id="file-tab" class="tab-content">
+      <label for="fileInput" class="upload-btn">選擇檔案(先按這個)</label>
+      <input id="fileInput" class="file-input" type="file" onchange="previewFile()" />
+      
+      <div class="file-info" id="fileInfo"></div>
+      <img id="preview" style="max-width: 100%; margin: 10px 0; display: none; border-radius: 8px;" />
+      
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      
+      <button id="sendFileBtn" onclick="sendFile()">送出檔案（然後按這個）</button>
+    </div>
+    
+    <div id="status" style="margin-top: 15px; font-size: 0.9rem;"></div>
   </div>
   
   <script>
+    // API 端點基礎 URL
+    const API_BASE_URL = 'https://telegrambotmessage.a0967052607.workers.dev';
+    
+    // 深色/淺色模式切換
     const toggle = document.getElementById('modeToggle');
     const root = document.documentElement;
     const saved = localStorage.getItem('theme') || 'light';
@@ -173,13 +242,46 @@
       root.setAttribute('data-theme', mode);
       localStorage.setItem('theme', mode);
     });
-  
+    
+    // 標籤頁切換
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        // 移除所有標籤和內容的活動狀態
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // 設置當前標籤和內容為活動狀態
+        tab.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+    
+    // 顯示狀態訊息
     function showStatus(msg, success = true) {
       const status = document.getElementById("status");
       status.style.color = success ? "green" : "red";
       status.innerText = msg;
     }
-  
+    
+    // 設置進度條
+    function setProgressBar(percent) {
+      const progressBar = document.getElementById("progressBar");
+      progressBar.style.width = percent + "%";
+    }
+    
+    // 顯示進度條
+    function showProgressBar(show = true) {
+      const progressContainer = document.getElementById("progressContainer");
+      progressContainer.style.display = show ? "block" : "none";
+      if (show) {
+        setProgressBar(0);
+      }
+    }
+    
+    // 發送文字訊息
     async function sendText() {
       const btn = document.getElementById("sendTextBtn");
       const msgEl = document.getElementById("msg");
@@ -190,7 +292,7 @@
       btn.innerText = "傳送中...";
   
       try {
-        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/sendText', {
+        const res = await fetch(`${API_BASE_URL}/sendText`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
@@ -200,7 +302,7 @@
           showStatus("文字訊息已送出！");
           msgEl.value = '';
         } else {
-          showStatus("發送失敗：" + JSON.stringify(data), false);
+          showStatus("發送失敗：" + (data.description || data.error || JSON.stringify(data)), false);
         }
       } catch (err) {
         showStatus("錯誤：" + err.message, false);
@@ -209,13 +311,30 @@
       btn.disabled = false;
       btn.innerText = "送出文字";
     }
-  
-    function previewImage() {
-      const fileInput = document.getElementById("imageInput");
+    
+    // 預覽文件
+    function previewFile() {
+      const fileInput = document.getElementById("fileInput");
       const preview = document.getElementById("preview");
+      const fileInfo = document.getElementById("fileInfo");
       const file = fileInput.files[0];
-  
-      if (file) {
+      
+      if (!file) {
+        preview.style.display = "none";
+        fileInfo.innerHTML = "";
+        return;
+      }
+      
+      // 顯示檔案信息
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      fileInfo.innerHTML = `
+        <strong>檔案名稱:</strong> ${file.name}<br/>
+        <strong>檔案類型:</strong> ${file.type || '未知'}<br/>
+        <strong>檔案大小:</strong> ${sizeMB} MB
+      `;
+      
+      // 如果是圖片，顯示預覽
+      if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = () => {
           preview.src = reader.result;
@@ -226,38 +345,131 @@
         preview.style.display = "none";
       }
     }
-  
-    async function sendImage() {
-      const btn = document.getElementById("sendImageBtn");
-      const fileInput = document.getElementById("imageInput");
+    
+    // 根據檔案類型獲取端點
+    function getEndpointForFile(file) {
+      if (file.type.startsWith('image/')) {
+        return 'sendPhoto';
+      } else if (file.type.startsWith('video/')) {
+        return 'sendVideo';
+      } else if (file.type.startsWith('audio/')) {
+        return 'sendAudio';
+      } else {
+        return 'sendDocument';
+      }
+    }
+    
+    // 發送檔案
+    async function sendFile() {
+      const btn = document.getElementById("sendFileBtn");
+      const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
-      if (!file) return showStatus("請選擇圖片", false);
-  
+      if (!file) return showStatus("請選擇檔案", false);
+      
       btn.disabled = true;
       btn.innerText = "傳送中...";
-  
-      const formData = new FormData();
-      formData.append("photo", file);
-  
+      showProgressBar(true);
+      
       try {
-        const res = await fetch('https://telegrambotmessage.a0967052607.workers.dev/sendPhoto', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.ok) {
-          showStatus("圖片已送出！");
-          fileInput.value = '';
-          preview.style.display = "none";
+        const endpoint = getEndpointForFile(file);
+        
+        // 檔案小於 10MB，直接上傳
+        if (file.size <= 10 * 1024 * 1024) {
+          const formData = new FormData();
+          const fileKey = endpoint.replace('send', '').toLowerCase();
+          formData.append(fileKey, file);
+          formData.append("caption", file.name);
+          
+          const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await res.json();
+          if (data.ok) {
+            showStatus("檔案已送出！");
+            fileInput.value = '';
+            document.getElementById("preview").style.display = "none";
+            document.getElementById("fileInfo").innerHTML = "";
+          } else {
+            throw new Error(data.description || data.error || JSON.stringify(data));
+          }
         } else {
-          showStatus("發送失敗：" + JSON.stringify(data), false);
+          // 檔案大於 10MB，使用分片上傳
+          await chunkedUpload(file, endpoint);
         }
       } catch (err) {
         showStatus("錯誤：" + err.message, false);
       }
-  
+      
+      showProgressBar(false);
       btn.disabled = false;
-      btn.innerText = "送出圖片"; 
+      btn.innerText = "送出檔案";
+    }
+    
+    // 分片上傳大檔案
+    async function chunkedUpload(file, endpoint) {
+      const chunkSize = 4* 1024 * 1024; // 1MB 每片
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      const fileId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); // 生成唯一的檔案ID
+      
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(file.size, start + chunkSize);
+        const chunk = file.slice(start, end);
+        
+        const formData = new FormData();
+        formData.append("file", chunk);
+        formData.append("fileName", file.name);
+        formData.append("fileType", file.type);
+        formData.append("fileId", fileId);
+        formData.append("chunkIndex", chunkIndex);
+        formData.append("totalChunks", totalChunks);
+        formData.append("endpoint", endpoint);
+        
+        const percent = Math.round((chunkIndex + 1) / totalChunks * 100);
+        setProgressBar(percent);
+        showStatus(`上傳進度: ${percent}%`);
+        
+        try {
+          const response = await fetch(`${API_BASE_URL}/uploadChunk`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const data = await response.json();
+          if (!data.ok && data.error) {
+            throw new Error(data.error);
+          }
+          
+          // 如果是最後一個分片，則完成上傳
+          if (chunkIndex === totalChunks - 1) {
+            const completeRes = await fetch(`${API_BASE_URL}/completeUpload`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fileId,
+                fileName: file.name,
+                fileType: file.type,
+                totalChunks,
+                endpoint
+              })
+            });
+            
+            const completeData = await completeRes.json();
+            if (completeData.ok) {
+              showStatus("檔案已上傳並發送！");
+              document.getElementById("fileInput").value = '';
+              document.getElementById("preview").style.display = "none";
+              document.getElementById("fileInfo").innerHTML = "";
+            } else {
+              throw new Error(completeData.description || completeData.error || "完成上傳失敗");
+            }
+          }
+        } catch (error) {
+          throw new Error(`分片 ${chunkIndex + 1}/${totalChunks} 上傳失敗: ${error.message}`);
+        }
+      }
     }
   </script>
 </body>
