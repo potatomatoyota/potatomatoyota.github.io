@@ -216,6 +216,16 @@
     .drop-area.active .drop-area-icon {
       color: var(--btn-bg);
     }
+    /* 新增署名區塊樣式 */
+    .name-input {
+      margin-bottom: 12px;
+    }
+    .name-label {
+      display: block;
+      text-align: left;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -230,6 +240,12 @@
     <div class="tab-container">
       <div class="tab active" data-tab="text-tab">文字</div>
       <div class="tab" data-tab="file-tab">檔案（傳圖或pdf）</div>
+    </div>
+    
+    <!-- 署名輸入框 - 共用區塊 -->
+    <div class="name-input">
+      <label for="senderName" class="name-label">您的署名：</label>
+      <input id="senderName" type="text" placeholder="請輸入您的姓名（選填）" />
     </div>
     
     <div id="text-tab" class="tab-content active">
@@ -265,7 +281,7 @@
   
   <script>
     // API 端點基礎 URL
-    const API_BASE_URL = 'https://telegrambotmessage.a0967052607.workers.dev';
+    const API_BASE_URL = 'https://telegrambotmessage.potatomatoyota.workers.dev';
     
     // 深色/淺色模式切換
     const toggle = document.getElementById('modeToggle');
@@ -296,6 +312,19 @@
       });
     });
     
+    // 儲存署名到本地存儲
+    document.getElementById('senderName').addEventListener('input', function() {
+      localStorage.setItem('senderName', this.value);
+    });
+    
+    // 載入儲存的署名
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedName = localStorage.getItem('senderName');
+      if (savedName) {
+        document.getElementById('senderName').value = savedName;
+      }
+    });
+    
     // 顯示狀態訊息
     function showStatus(msg, success = true) {
       const status = document.getElementById("status");
@@ -318,12 +347,22 @@
       }
     }
     
+    // 獲取署名
+    function getSenderName() {
+      const nameField = document.getElementById("senderName");
+      const name = nameField.value.trim();
+      return name ? `【${name}】` : "";
+    }
+    
     // 發送文字訊息
     async function sendText() {
       const btn = document.getElementById("sendTextBtn");
       const msgEl = document.getElementById("msg");
       const msg = msgEl.value.trim();
       if (!msg) return showStatus("請輸入訊息", false);
+      
+      const senderPrefix = getSenderName();
+      const fullMessage = senderPrefix ? `${senderPrefix} ${msg}` : msg;
   
       btn.disabled = true;
       btn.innerText = "傳送中...";
@@ -332,7 +371,7 @@
         const res = await fetch(`${API_BASE_URL}/sendText`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: msg })
+          body: JSON.stringify({ message: fullMessage })
         });
         const data = await res.json();
         if (data.ok) {
@@ -425,13 +464,16 @@
       
       try {
         const endpoint = getEndpointForFile(file);
+        const senderPrefix = getSenderName();
         
         // 檔案小於 10MB，直接上傳
         if (file.size <= 10 * 1024 * 1024) {
           const formData = new FormData();
           const fileKey = endpoint.replace('send', '').toLowerCase();
           formData.append(fileKey, file);
-          formData.append("caption", file.name);
+          // 添加署名到檔案說明中
+          const caption = senderPrefix ? `${senderPrefix} ${file.name}` : file.name;
+          formData.append("caption", caption);
           
           const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
             method: 'POST',
@@ -449,7 +491,7 @@
           }
         } else {
           // 檔案大於 10MB，使用分片上傳
-          await chunkedUpload(file, endpoint);
+          await chunkedUpload(file, endpoint, senderPrefix);
         }
       } catch (err) {
         showStatus("錯誤：" + err.message, false);
@@ -461,7 +503,7 @@
     }
     
     // 分片上傳大檔案
-    async function chunkedUpload(file, endpoint) {
+    async function chunkedUpload(file, endpoint, senderPrefix) {
       const chunkSize = 4* 1024 * 1024; // 4MB 每片
       const totalChunks = Math.ceil(file.size / chunkSize);
       const fileId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); // 生成唯一的檔案ID
@@ -479,6 +521,8 @@
         formData.append("chunkIndex", chunkIndex);
         formData.append("totalChunks", totalChunks);
         formData.append("endpoint", endpoint);
+        // 添加署名信息
+        formData.append("senderName", senderPrefix);
         
         const percent = Math.round((chunkIndex + 1) / totalChunks * 100);
         setProgressBar(percent);
@@ -505,7 +549,8 @@
                 fileName: file.name,
                 fileType: file.type,
                 totalChunks,
-                endpoint
+                endpoint,
+                senderName: senderPrefix // 加入署名
               })
             });
             
@@ -588,3 +633,9 @@
   </script>
 </body>
 </html>
+
+curl --location --request POST 'https://api.dropboxapi.com/oauth2/token' \
+-u 'murf4769h6lcpkn:xg6gqkq8tx2av1i'
+-H 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'code=5whPI3onBFoAAAAAAAAAQkx7U_redT3zU-Kd3j1D9VY' \
+--data-urlencode 'grant_type=authorization_code'
