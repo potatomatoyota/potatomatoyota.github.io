@@ -66,6 +66,7 @@ export function rgbToHsl(r, g, b) {
     return adjustedColor;
   }
   
+ 
 
   export function getSaturatedDominantColor(imgEl) {
     const canvas = document.createElement('canvas');
@@ -187,10 +188,6 @@ export function rgbToHsl(r, g, b) {
       return { ...compensatedGray, manual: true };
     }
 
-    // 如果黑白色佔比不足以直接決定，但仍然較高，調整後續權重判斷
-    const isBlackDominant = blackRatio > 0.4;
-    const isWhiteDominant = whiteRatio > 0.4;
-
     // 繼續原有的處理邏輯
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i];
@@ -241,7 +238,7 @@ export function rgbToHsl(r, g, b) {
       
       // 處理白色
       const isNearWhite = r >= 180 && g >= 180 && b >= 180;
-      if (isNearWhite && !isWhiteDominant) {
+      if (isNearWhite) {
         return false;
       }
       
@@ -290,16 +287,16 @@ export function rgbToHsl(r, g, b) {
       const bIsGray = Math.abs(bR - bG) < 20 && Math.abs(bG - bB) < 20 && Math.abs(bR - bB) < 20;
       
       // 為灰色調降低權重
-      const aWeight = aIsGray ? 0.5 : 1;
-      const bWeight = bIsGray ? 0.5 : 1;
+      const aWeight = aIsGray ? 0.4 : 1;
+      const bWeight = bIsGray ? 0.4 : 1;
       
       
       const aOccupancyFactor = Math.pow(a[1].count / totalPixels, 1.5) * 3;
       const bOccupancyFactor = Math.pow(b[1].count / totalPixels, 1.5) * 3;
       
       
-      const aScore = Math.pow(a[1].saturation, 1.2) * aOccupancyFactor * aWeight;
-      const bScore = Math.pow(b[1].saturation, 1.2) * bOccupancyFactor * bWeight;
+      const aScore = Math.pow(a[1].saturation,0.7) * aOccupancyFactor * aWeight;
+      const bScore = Math.pow(b[1].saturation,0.7) * bOccupancyFactor * bWeight;
       
       return bScore - aScore;
     });
@@ -319,24 +316,19 @@ export function rgbToHsl(r, g, b) {
     
     // 如果沒有超高佔比顏色，選擇最佳顏色
     const bestColor = topColors.reduce((best, current) => {
-      // 避免選擇太接近黑白的顏色
-      const [r, g, b] = current[0].split(',').map(Number);
-      const isNearBlackOrWhite = (r < 40 && g < 40 && b < 40) || (r > 215 && g > 215 && b > 215);
       
-      if (isNearBlackOrWhite && !isBlackDominant && !isWhiteDominant) {
-        return best;
-      }
+     
       
       
       const currentScore = current[1].saturation * Math.sqrt(current[1].count / totalPixels);
       const bestScore = best[1].saturation * Math.sqrt(best[1].count / totalPixels);
-      
+      console.log('最佳顏色')
       return currentScore > bestScore ? current : best;
     }, topColors[0]);
 
     let { r, g, b,} = bestColor[1];
     
-    // 避免太灰的顏色
+   
     
     console.log( r, g, b)
     return { r, g, b };

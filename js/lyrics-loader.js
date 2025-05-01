@@ -192,7 +192,8 @@ function parseLRC(lrc) {
   return lines.map(line => {
     const match = line.match(pattern);
     if (!match) return null;
-    const time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+    let time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+    time = Math.max(0, time - 0); // 提前2秒
     return { time, text: match[3].trim() };
   }).filter(Boolean);
 }

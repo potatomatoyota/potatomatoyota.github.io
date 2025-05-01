@@ -7,190 +7,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <title>lastfm</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
 
-  <style>
-    * {
-      font-family: 'Noto Sans TC', 'Noto Sans JP', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    @media (max-width: 480px) {
-      .album-wrapper {
-        max-width: 250px !important;
-        width: 70vw !important;
-        aspect-ratio: 1 / 1;
-      }
-      .track-name {
-        font-size: 1.4rem !important;
-      }
-      .album-name {
-        font-size: 1.1rem !important;
-      }
-      .artist-name {
-        font-size: 1rem !important;
-      }
-      .container {
-        padding: 1rem !important;
-      }
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    body {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: background-color 1s ease, color 1s ease;
-      text-align: center;
-      overflow: hidden;
-      background-color: #000000;
-      color: #ffffff;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      max-width: 90vw;
-      width: 100%;
-      padding: 2rem;
-      transition: opacity 1s ease;
-      margin-top: 6rem;
-    }
-    .album-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 1 / 1;
-      margin-bottom: 1.2rem;
-    }
-    .album-cover {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-    }
-    .album-cover:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-    }
-    .track-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
-    .track-name, .album-name, .artist-name {
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
-    }
-    .track-name {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 0.15rem;
-    }
-    .album-name {
-      font-size: 1.5rem;
-      opacity: 0.9;
-      margin-bottom: 0.15rem;
-    }
-    .artist-name {
-      font-size: 1.25rem;
-      opacity: 0.8;
-    }
-    .loading {
-      font-size: 1.5rem;
-    }
-    .error-message {
-      color: #ff6b6b;
-      margin-top: 1rem;
-    }
-    .fade {
-      opacity: 1;
-    }
-    .fade-out {
-      opacity: 0;
-    }
-    
-    .lyrics-container {
-      /* 預留固定空間給歌詞 */
-      height: 80px; /* 適應歌詞的大小 */
-      width: 100%;
-      max-width: 500px;
-      margin-top: 1.5rem;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
 
-    .lyrics {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-      line-height: 1.6;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem 1rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      white-space: normal;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
-      transition: opacity 0.5s ease;
-      opacity: 0.9;
-    }
-
-   
-    .lyrics-line {
-      position: absolute;
-      width: 100%;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      font-size: clamp(0.8rem, 2.5vw, 1.2rem);
-      text-align: center;
-      white-space: normal;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 0 0.5rem;
-    }
-
-    .lyrics-line.active {
-      opacity: 1;
-    }
-
-    /* 響應式設計 */
-    @media (max-width: 480px) {
-      .lyrics-container {
-        height: 60px; /* 手機更小*/
-      }
-    }
-  </style>
   <script type="module">
-    import { loadLyrics, setTrackFetcher, hideLyrics } from './js/lyrics-loader.js';
     import { getSaturatedDominantColor, getSafeTextColor } from './js/color-utils.js';
   
-    window.loadLyrics = loadLyrics;
-    window.setTrackFetcher = setTrackFetcher;
     window.getSaturatedDominantColor = getSaturatedDominantColor;
     window.getSafeTextColor = getSafeTextColor;
-    window.hideLyrics = hideLyrics;
   </script>
   
 </head>
 <body>
+  <div class="bg-transition" id="bgTransition"></div>
   <div class="container fade" id="app">
-    <div class="loading">載入中...</div>
+    <div class="album-wrapper">
+      <img src="img/default-cover.jpg" alt="default cover" class="album-cover">
+      
+    </div>
+    <div class="track-info">
+      <div class="track-name">載入中...</div>
+      <div class="album-name">請稍候</div>
+      <div class="artist-name">正在載入歌曲資訊</div>
+    </div>
   </div>
   
   <script>
@@ -199,196 +38,317 @@
     let lastRenderTimestamp = 0;
     let isFirstLoad = true;
     let grayPixels = 0;
+    let currentCardIndex = 0;
+    let animationInProgress = false;
+    let currentFontColor = '#ffffff';
+    let touchStartY = 0;
 
 
-    
-    
-    function getSafeTextColor(bg) {
-  
-      const brightness = (bg.r * 299 + bg.g * 587 + bg.b * 114) / 1000;
+    const albumColorMap = {
+
+      // 格式: '專輯名稱-藝術家名稱': { background: 'rgba(r,g,b)', text: 'rgba(r,g,b)' }
+      'エルマ-ヨルシカ': { background: 'rgb(50, 70, 50)', text: 'rgb(168, 192, 168)' },
       
-      // 最低對比度參數 
-      const contrastFactor = 120;
+      // 可以按照這個格式添加更多專輯
+    };
+
+    // 僅文字更新的動畫
+    async function renderTextOnly(track) {
+      if (animationInProgress) return;
+      animationInProgress = true;
       
-      let r, g, b;
-      
-      if (brightness < 128) {
-        // 如果背景暗，使文字稍亮
-        r = Math.min(255, bg.r + contrastFactor);
-        g = Math.min(255, bg.g + contrastFactor);
-        b = Math.min(255, bg.b + contrastFactor);
-      } else {
-        // 如果背景亮，使文字稍暗
-        r = Math.max(0, bg.r - contrastFactor);
-        g = Math.max(0, bg.g - contrastFactor);
-        b = Math.max(0, bg.b - contrastFactor);
-      }
-      
-      // 調整顏色飽和度
-      const { h, s, l } = rgbToHsl(r, g, b);
-      const bgHsl = rgbToHsl(bg.r, bg.g, bg.b);
-      
-      
-      const adjustedColor = hslToRgb(
-        bgHsl.h, 
-        Math.min(1, s * 1.2),
-        l 
-      );
-      
-      return adjustedColor;
-    }
-    // 儲存歌曲資訊
-    function saveSongInfo(songData) {
-      if (!songData || !songData.track) return;
-      
-      // 為了避免儲存太多資料，只儲存必要的資訊
-      const savedData = {
-        track: {
-          name: songData.track.name,
-          artist: songData.track.artist,
-          album: songData.track.album,
-          image: songData.track.image,
-          '@attr': songData.track['@attr'],
-          savedAt: new Date().toISOString()
+      const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = albumImgUrl;
+
+      img.onload = () => {
+        // 生成唯一的鍵值
+        const albumKey = `${track.album['#text']}-${track.artist['#text']}`;
+        
+        // 檢查是否有預設的顏色
+        let rawColor, textColor, bgColor, fontColor;
+        
+        if (albumColorMap[albumKey]) {
+          // 使用預設顏色
+          bgColor = albumColorMap[albumKey].background;
+          fontColor = albumColorMap[albumKey].text;
+          
+          console.log(`使用預設顏色方案: ${albumKey}`);
+        } else {
+          // 使用自動計算的顏色
+          rawColor = getSaturatedDominantColor(img);
+          textColor = getSafeTextColor(rawColor);
+          bgColor = `rgb(${rawColor.r}, ${rawColor.g}, ${rawColor.b})`;
+          fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
         }
+
+        transitionBackgroundColor(bgColor);
+        document.body.style.color = fontColor;
+        currentFontColor = fontColor;
+        
+        // 更新所有文字顏色
+        updateAllTextColors(fontColor);
       };
       
-      localStorage.setItem('lastfm_last_song', JSON.stringify(savedData));
-    }
-
-    // 從 localStorage 讀取歌曲資訊
-    function getSavedSongInfo() {
-      const savedData = localStorage.getItem('lastfm_last_song');
-      if (!savedData) return null;
-      
-      try {
-        return JSON.parse(savedData);
-      } catch (e) {
-        console.error('Failed to parse saved song data:', e);
-        return null;
-      }
-    }
-
-    function renderTextOnly(track) {
-
       const app = document.getElementById('app');
       const nameEl = app.querySelector('.track-name');
       const albumEl = app.querySelector('.album-name');
       const artistEl = app.querySelector('.artist-name');
 
-      const isNowPlaying = track['@attr']?.nowplaying === 'true';
-
-      if (nameEl && albumEl && artistEl) {
-        nameEl.textContent = track.name;
-        albumEl.textContent = track.album['#text'];
-        artistEl.textContent = track.artist['#text'];
-
-        if (isNowPlaying) {
-          loadLyrics(track);
-          const lyricsDiv = document.getElementById('lyrics');
-          if (lyricsDiv) lyricsDiv.style.display = 'flex';
-        } else {
-          hideLyrics(); 
-        }
-      } else {
-        renderFull(track);
-      }
+      // 添加文字退出動畫
+      nameEl.classList.add('text-slide-down');
+      albumEl.classList.add('text-slide-down');
+      artistEl.classList.add('text-slide-down');
+      
+      // 等待動畫完成
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      // 更新文字
+      nameEl.textContent = track.name;
+      albumEl.textContent = track.album['#text'];
+      artistEl.textContent = track.artist['#text'];
+      
+      // 移除退出動畫，添加進入動畫
+      nameEl.classList.remove('text-slide-down');
+      albumEl.classList.remove('text-slide-down');
+      artistEl.classList.remove('text-slide-down');
+      
+      // 強制重繪
+      void nameEl.offsetWidth;
+      void albumEl.offsetWidth;
+      void artistEl.offsetWidth;
+      
+      nameEl.classList.add('text-slide-up');
+      albumEl.classList.add('text-slide-up');
+      artistEl.classList.add('text-slide-up');
+      
+      // 設置文字顏色
+      nameEl.style.color = currentFontColor;
+      albumEl.style.color = currentFontColor;
+      artistEl.style.color = currentFontColor;
+      
+      // 移除進入動畫類別
+      setTimeout(() => {
+        nameEl.classList.remove('text-slide-up');
+        albumEl.classList.remove('text-slide-up');
+        artistEl.classList.remove('text-slide-up');
+        animationInProgress = false;
+      }, 10);
+    }
+    
+    // 背景色平滑過渡
+    function transitionBackgroundColor(newColor) {
+      const bgTransition = document.getElementById('bgTransition');
+      bgTransition.style.backgroundColor = newColor;
+      bgTransition.style.opacity = 1;
+      
+      setTimeout(() => {
+        document.body.style.backgroundColor = newColor;
+        bgTransition.style.opacity = 0;
+      }, 500);
     }
 
+    function updateAllTextColors(color) {
+      const app = document.getElementById('app');
+      
+      // 更新所有文字元素
+      const textElements = app.querySelectorAll('.track-name, .album-name, .artist-name');
+      textElements.forEach(el => {
+        el.style.color = color;
+      });
+      
+      // 更新所有連結
+      const links = app.querySelectorAll('a');
+      links.forEach(link => {
+        link.style.color = color;
+        link.style.textDecoration = 'none';
+      });
+    }
 
-    function renderFull(track) {
-        const app = document.getElementById('app');
-        const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+    async function renderFull(track) {
+      if (animationInProgress) return;
+      animationInProgress = true;
+      
+      const app = document.getElementById('app');
+      const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = albumImgUrl;
+
+      // 創建Last.fm的URL
+      const trackUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/_/${encodeURIComponent(track.name)}`;
+      const albumUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/${encodeURIComponent(track.album['#text'])}`;
+      const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
+      
+      // 使當前封面圖片開始退場動畫
+      const currentCover = app.querySelector('.album-cover');
+      if (currentCover) {
+        currentCover.classList.add('exit');
+      }
+      
+      // 使文字開始退場動畫
+      const trackInfo = app.querySelector('.track-info');
+      if (trackInfo) {
+        const textElements = trackInfo.querySelectorAll('div, a');
+        textElements.forEach((el, i) => {
+          el.classList.add('text-slide-down');
+          el.style.transitionDelay = `${i * 50}ms`;
+        });
+      }
+
+      // 使用 Promise 代替 async/await
+      return new Promise((resolveRender) => {
+        img.onload = () => {
+          // 生成唯一的鍵值
+          const albumKey = `${track.album['#text']}-${track.artist['#text']}`;
+          
+          // 檢查是否有預設的顏色
+          let rawColor, textColor, bgColor, fontColor;
+          
+          if (albumColorMap[albumKey]) {
+            // 使用預設顏色
+            bgColor = albumColorMap[albumKey].background;
+            fontColor = albumColorMap[albumKey].text;
+            
+            console.log(`使用預設顏色方案: ${albumKey}`);
+          } else {
+            // 使用自動計算的顏色
+            rawColor = getSaturatedDominantColor(img);
+            textColor = getSafeTextColor(rawColor);
+            bgColor = `rgb(${rawColor.r}, ${rawColor.g}, ${rawColor.b})`;
+            fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
+          }
+          
+          transitionBackgroundColor(bgColor);
+          document.body.style.color = fontColor;
+          currentFontColor = fontColor;
+          
+          // 使用 updateBackgroundFromImage 返回的 Promise
+          updateBackgroundFromImage(albumImgUrl)
+            .then(() => {
+              // 等待退場動畫完成
+              setTimeout(() => {
+                // 準備新的HTML
+                const newHTML = `
+                  <div class="album-wrapper">
+                    <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover enter">
+                    <div class="scroll-indicator" id="scrollIndicator"></div>
+                  </div>
+                  <div class="track-info">
+                    <a href="${trackUrl}" target="_blank" class="track-name text-slide-up">${track.name}</a>
+                    <a href="${albumUrl}" target="_blank" class="album-name text-slide-up">${track.album['#text']}</a>
+                    <a href="${artistUrl}" target="_blank" class="artist-name text-slide-up">${track.artist['#text']}</a>
+                  </div>
+                `;
+
+                app.innerHTML = newHTML;
+                currentAlbumImgUrl = albumImgUrl;
+
+                // 更新所有文字顏色
+                updateAllTextColors(fontColor);
+                
+                setTimeout(() => {
+                  // 啟動封面進場動畫
+                  const newCover = app.querySelector('.album-cover');
+                  if (newCover) {
+                    void newCover.offsetWidth; // 強制重繪
+                    newCover.classList.remove('enter');
+                  }
+                  
+                  // 啟動文字進場動畫
+                  const textElements = app.querySelectorAll('.track-name, .album-name, .artist-name');
+                  textElements.forEach((el, i) => {
+                    el.style.transitionDelay = `${i * 100}ms`;
+                    void el.offsetWidth; // 強制重繪
+                    el.classList.remove('text-slide-up');
+                  });
+                  
+                  // 重設動畫進行中狀態
+                  setTimeout(() => {
+                    animationInProgress = false;
+                    resolveRender();
+                  }, 800);
+                }, 100);
+              }, 600);
+            });
+        };
+        
+        // 如果圖片加載失敗
+        img.onerror = () => {
+          console.error('Failed to load album image');
+          animationInProgress = false;
+          resolveRender();
+        };
+      });
+    }
+
+    function updateBackgroundFromImage(imageUrl) {
+      return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = "Anonymous";
-        img.src = albumImgUrl;
-
-        // 創建Last.fm的URL
-        const trackUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/_/${encodeURIComponent(track.name)}`;
-        const albumUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}/${encodeURIComponent(track.album['#text'])}`;
-        const artistUrl = `https://www.last.fm/music/${encodeURIComponent(track.artist['#text'])}`;
+        img.src = imageUrl;
 
         img.onload = () => {
+          // 如果我們有當前的曲目資訊，檢查是否在預設列表中
+          if (window.currentTrackData) {
+            const albumKey = `${window.currentTrackData.album['#text']}-${window.currentTrackData.artist['#text']}`;
+            
+            if (albumColorMap[albumKey]) {
+              // 使用預設顏色
+              const bgColor = albumColorMap[albumKey].background;
+              const fontColor = albumColorMap[albumKey].text;
+              
+              transitionBackgroundColor(bgColor);
+              document.body.style.color = fontColor;
+              currentFontColor = fontColor;
+              
+              resolve();
+              return;
+            }
+          }
+          
+          // 否則使用自動計算的顏色
           const rawColor = getSaturatedDominantColor(img);
-          let color = rawColor;
-          const textColor = getSafeTextColor(color);
-          const bgColor = `rgb(${color.r}, ${color.g}, ${color.b})`;
+          const textColor = getSafeTextColor(rawColor);
+          const bgColor = `rgb(${rawColor.r}, ${rawColor.g}, ${rawColor.b})`;
           const fontColor = `rgb(${textColor.r}, ${textColor.g}, ${textColor.b})`;
 
-          app.classList.add('fade-out');
-
-          setTimeout(() => {
-            app.innerHTML = `
-              <div class="album-wrapper">
-                <img src="${albumImgUrl}" alt="${track.album['#text']}" class="album-cover">
-              </div>
-              <div class="track-info">
-                <a href="${trackUrl}" target="_blank" class="track-name">${track.name}</a>
-                <a href="${albumUrl}" target="_blank" class="album-name">${track.album['#text']}</a>
-                <a href="${artistUrl}" target="_blank" class="artist-name">${track.artist['#text']}</a>
-              </div>
-              <div class="lyrics-container">
-                <div class="lyrics" id="lyrics"></div>
-              </div>
-            `;
-            document.body.style.backgroundColor = bgColor;
-            document.body.style.color = fontColor;
-            app.classList.remove('fade-out');
-            app.classList.add('fade');
-            currentAlbumImgUrl = albumImgUrl;
-
-            const links = app.querySelectorAll('a');
-            links.forEach(link => {
-              link.style.color = fontColor;
-              link.style.textDecoration = 'none';
-            });
-
-            const isNowPlaying = track['@attr']?.nowplaying === 'true';
-
-            if (isNowPlaying) {
-              loadLyrics(track);
-              const lyricsDiv = document.getElementById('lyrics');
-              if (lyricsDiv) {
-                lyricsDiv.style.display = 'flex';
-                lyricsDiv.style.visibility = 'visible';
-                lyricsDiv.style.height = 'auto'; 
-              }
-            } else {
-              hideLyrics(); 
-            }
-
-          }, 800);
-
+          transitionBackgroundColor(bgColor);
+          document.body.style.color = fontColor;
+          currentFontColor = fontColor;
+          
+          resolve();
         };
 
+        img.onerror = () => {
+          console.error('Failed to load image for background update:', imageUrl);
+          reject();
+        };
+      });
+    }
 
-
-         
-        }
         
     async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
 
       const track = songData.track;
       const isNowPlaying = track['@attr']?.nowplaying === 'true';
+      
       window.currentTrackData = track;
-
       
       // 如果不是首次載入，只在正在播放時更新
-      if (!isFirstLoad && !isNowPlaying) return;
-      
-      // 如果是正在播放的歌曲，儲存到 localStorage
-      if (isNowPlaying) {
-        saveSongInfo(songData);
-      }
+      if (!isNowPlaying && !isFirstLoad) return;
 
       const trackId = `${track.name}-${track.artist['#text']}`;
+      const sameTrack = trackId === currentTrackId;
+
       const albumImgUrl = track.image.find(img => img.size === "extralarge")['#text'];
 
-      if (trackId === currentTrackId) return;
+      if (sameTrack && !isFirstLoad) return;
       currentTrackId = trackId;
 
-      if (albumImgUrl === currentAlbumImgUrl) {
+      if (albumImgUrl === currentAlbumImgUrl && !isFirstLoad) {
         renderTextOnly(track);
       } else {
         renderFull(track);
@@ -402,52 +362,238 @@
         const data = await res.json();
         return data;
       } catch (err) {
-        console.error('Error fetching song info:', err);
-        // 嘗試從本地存儲讀取
-        const cachedData = getSavedSongInfo();
-        if (cachedData) {
-          // 有快取資料就直接使用
-          return cachedData;
-        }
-        
         // 如果都沒有就顯示錯誤
         const app = document.getElementById('app');
         app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`; 
         return null;
       }
     }
+   
+    const shortcutCards = [
+      { type: 'lastfm' },
+      { type: 'link', title: 'YouTube', url: 'https://www.youtube.com', icon: 'img/Youtube.png' },
+      { type: 'link', title: 'bilibili', url: 'https://www.bilibili.com/', icon: 'img/bilibili.png' },
+      { type: 'link', title: 'reddit', url: 'https://www.reddit.com/', icon: 'img/reddit.png' },
+      { type: 'link', title: 'facebook', url: 'https://www.facebook.com/', icon: 'img/facebook.png' },
+      { type: 'link', title: 'GitHub', url: 'https://github.com', icon: 'img/github.png' },
+    ];
+    
+    // 修改 switchCard 函數
+  function switchCard(index) {
+    if (animationInProgress) return;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      //  當前歌曲傳進 lyrics-loader
-      setTrackFetcher(() => window.currentTrackData);
+    // 循環切換
+    if (index < 0) {
+      index = shortcutCards.length - 1;
+    } else if (index >= shortcutCards.length) {
+      index = 0;
+    }
 
-      const latestSong = await getSongInfo();
-      if (latestSong) {
-        renderApp(latestSong, true);
-      } else {
-        // 快取
-        const cachedSong = getSavedSongInfo();
-        if (cachedSong) {
-          renderApp(cachedSong, true);
+    if (index === currentCardIndex) return;
+
+    // 保存舊索引和新索引
+    const oldIndex = currentCardIndex;
+    currentCardIndex = index;
+
+    const card = shortcutCards[index];
+    
+    // 確認卡片存在
+    if (!card) {
+      console.error('無效的卡片索引:', index);
+      currentCardIndex = oldIndex; // 恢復原來的索引
+      return;
+    }
+
+    try {
+      if (card.type === 'lastfm') {
+        console.log('切換到lastfm卡片，當前數據狀態:', window.latestSongData);
+        if (window.latestSongData) {
+          // 檢查 latestSongData 的結構並適當處理
+          const trackData = window.latestSongData.track || window.latestSongData;
+          if (trackData) {
+            currentAlbumImgUrl = null;
+            renderFull(trackData);
+          } else {
+            // 如果沒有歌曲數據，顯示加載中
+            showLoadingState();
+          }
         } else {
-          const app = document.getElementById('app');
-          app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`;
+          // 如果沒有最新歌曲數據，顯示加載中
+          showLoadingState();
+          // 嘗試獲取數據
+          getSongInfo().then(song => {
+            if (song) {
+              window.latestSongData = song;
+              if (currentCardIndex === index) { 
+                const trackData = song.track || song;
+                renderFull(trackData);
+              }
+            }
+          });
         }
+      } else if (card.type === 'link') {
+        // 確保所有必要屬性都存在
+        if (card.url && card.title && card.icon) {
+          renderLinkCard(card);
+        } else {
+          console.error('無效的鏈接卡片數據:', card);
+          showErrorCard('卡片數據不完整');
+        }
+      } else {
+        console.error('未知的卡片類型:', card.type);
+        showErrorCard('未知的卡片類型');
+      }
+    } catch (error) {
+      console.error('卡片渲染錯誤:', error);
+      showErrorCard('卡片載入失敗');
+      currentCardIndex = oldIndex; // 恢復原來的索引
+    }
+  }
+
+  
+  function showLoadingState() {
+    const app = document.getElementById('app');
+    
+    const html = `
+      <div class="album-wrapper">
+        <img src="img/default-cover.jpg" alt="載入中" class="album-cover">
+      </div>
+      <div class="track-info">
+        <div class="track-name">載入中...</div>
+        <div class="album-name">請稍候</div>
+        <div class="artist-name">正在載入資訊</div>
+      </div>
+    `;
+    
+    app.innerHTML = html;
+    animationInProgress = false;
+  }
+
+  // 錯誤卡片顯示
+  function showErrorCard(message = '載入失敗') {
+    const app = document.getElementById('app');
+    
+    const html = `
+      <div class="album-wrapper">
+        <div class="error-icon">❌</div>
+      </div>
+      <div class="track-info">
+        <div class="track-name">${message}</div>
+        <div class="album-name">發生錯誤</div>
+        <div class="artist-name">請嘗試重新載入頁面</div>
+      </div>
+    `;
+    
+    app.innerHTML = html;
+    animationInProgress = false;
+  }
+
+  
+  function renderLinkCard(card) {
+    if (!card || !card.url || !card.title || !card.icon) {
+      console.error('無效的卡片數據:', card);
+      showErrorCard('卡片數據不完整');
+      return;
+    }
+
+    animationInProgress = true;
+    const app = document.getElementById('app');
+
+    const html = `
+      <div class="album-wrapper link-card">
+        <a href="${card.url}" target="_blank">
+          <img src="${card.icon}" alt="${card.title}" class="album-cover" />
+        </a>
+      </div>
+      <div class="track-info">
+        <a href="${card.url}" target="_blank" class="track-name">${card.title}</a>
+        <div class="album-name">網站捷徑</div>
+        <div class="artist-name">${card.url}</div>
+      </div>
+    `;
+
+    app.innerHTML = html;
+
+    document.body.style.color = currentFontColor;
+    updateAllTextColors(currentFontColor);
+
+    animationInProgress = false;
+  }
+      
+      function handleWheel(event) {
+        if (animationInProgress) return;
+        const direction = event.deltaY > 0 ? 1 : -1;
+        switchCard(currentCardIndex + direction);
       }
 
-      isFirstLoad = false;
+      function handleTouchStart(e) { 
+        touchStartY = e.touches[0].clientY; 
+      }
 
-      // 設定定時器定期檢查更新
+      function handleTouchEnd(e) {
+        const diffY = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(diffY) < 50 || animationInProgress) return;
+        const direction = diffY < 0 ? 1 : -1;
+        switchCard(currentCardIndex + direction);
+      }
+
+    function renderLinkCard(card) {
+      animationInProgress = true;
+      const app = document.getElementById('app');
+
+      const html = `
+        <div class="album-wrapper link-card">
+          <a href="${card.url}" target="_blank">
+            <img src="${card.icon}" alt="${card.title}" class="album-cover" />
+          </a>
+        </div>
+        <div class="track-info">
+          <a href="${card.url}" target="_blank" class="track-name">${card.title}</a>
+          <div class="album-name">網站捷徑</div>
+          <div class="artist-name">${card.url}</div>
+        </div>
+      `;
+
+      app.innerHTML = html;
+
+      document.body.style.color = currentFontColor;
+      updateAllTextColors(currentFontColor);
+
+      animationInProgress = false;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 首次載入強制載入
+      const firstCard = shortcutCards[0];
+      currentCardIndex = 0;
+
+      if (firstCard.type === 'lastfm') {
+        const song = await getSongInfo();
+        if (song?.track) {
+          renderApp(song, true);
+        } else if (song) {
+          renderApp({ track: song }, true);
+        }
+      } else {
+        renderLinkCard(firstCard);
+      }
+
+      document.addEventListener('wheel', handleWheel);
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchend', handleTouchEnd);
+
+      // 定時更新
       setInterval(async () => {
         const song = await getSongInfo();
         if (song) {
-          renderApp(song, false);
+          // 保存最新數據但只在顯示 last.fm 卡片時才渲染
+          window.latestSongData = song;
+          if (shortcutCards[currentCardIndex].type === 'lastfm') {
+            renderApp(song, false);
+          }
         }
       }, 3000);
     });
-
-
-   
   </script>
 </body>
 </html>
