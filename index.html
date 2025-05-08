@@ -64,8 +64,7 @@
         return;
       }
 
-      createWaveEffect();
-
+    
       try {
         const response = await fetch('https://love-track.potatomatoyota.workers.dev/', {
           method: 'POST',
@@ -92,38 +91,7 @@
       }
     }
 
-    // 創建水波光效函數
-    function createWaveEffect() {
-      const albumWrapper = document.querySelector('.album-wrapper');
-      if (!albumWrapper) return;
-      
-      // 創建心形圖標
-      const heart = document.createElement('div');
-      heart.className = 'heart-icon';
-      heart.innerHTML = '❤️';
-      albumWrapper.appendChild(heart);
-      
-      // 強制重繪
-      void heart.offsetWidth;
-      heart.classList.add('heart-animate');
-      
-      // 創建三個水波效果元素
-      for (let i = 0; i < 3; i++) {
-        const wave = document.createElement('div');
-        wave.className = 'wave-effect';
-        albumWrapper.appendChild(wave);
-        
-        // 在動畫結束後移除元素
-        wave.addEventListener('animationend', () => {
-          wave.remove();
-        });
-      }
-      
-      // 在動畫結束後移除心形圖標
-      heart.addEventListener('animationend', () => {
-        heart.remove();
-      });
-    }
+   
 
 
 
