@@ -1,20 +1,69 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>登入中...</title>
+  <meta charset="UTF-8" />
+  <title>正在登入 Last.fm...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .loader {
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-top: 5px solid #ff4c4c;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+
+    .fade {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .fade.show {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
-  <p>正在登入 Last.fm，請稍候...</p>
+  <h1>正在登入 Last.fm</h1>
+  <div class="loader"></div>
+  <div class="status" id="statusMsg">正在取得授權資訊...</div>
+
   <script>
-   const API_KEY = '058072f329723fb093f8e5610cd566cf';
-   const API_SECRET = 'e2f9cb0c1f902fa71d44bbe6769a9d53';
+    const API_KEY = '你的API_KEY';
+    const API_SECRET = '你的API_SECRET';
 
     const token = new URLSearchParams(window.location.search).get('token');
+    const statusMsg = document.getElementById('statusMsg');
 
     if (!token) {
-      alert('登入失敗，缺少 token');
+      statusMsg.textContent = '登入失敗：無法取得 token';
     } else {
       const params = {
         method: 'auth.getSession',
@@ -36,14 +85,18 @@
         .then(data => {
           if (data.session?.key) {
             localStorage.setItem('lastfm_session_key', data.session.key);
-            alert('登入成功！你可以回去按讚了！');
-            window.location.href = '/'; // 回到你的主頁
+            statusMsg.textContent = ' 登入成功！返回主頁...';
+            statusMsg.classList.add('fade', 'show');
+            setTimeout(() => {
+              window.location.href = '/';
+            },0);
           } else {
-            alert('取得 session key 失敗：' + JSON.stringify(data));
+            statusMsg.textContent = '登入失敗：' + (data.message || '未知錯誤');
           }
-        }).catch(err => {
-          console.error('發生錯誤:', err);
-          alert('交換 session key 時失敗');
+        })
+        .catch(err => {
+          console.error('錯誤:', err);
+          statusMsg.textContent = '發生錯誤，請稍後再試';
         });
     }
   </script>

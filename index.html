@@ -56,7 +56,7 @@
       const sessionKey = localStorage.getItem('lastfm_session_key');
 
       if (!sessionKey) {
-        alert('請先登入 Last.fm 才能按讚！');
+        window.location.href ='https://www.last.fm/api/auth/?api_key=058072f329723fb093f8e5610cd566cf&cb=https://potatomatoyota.github.io/callback.html';
         return;
       }
 
@@ -665,16 +665,16 @@
 
     
 
-    // 在頁面載入時預加載所有捷徑圖片
-  function preloadShortcutImages() {
-    shortcutCards.forEach(card => {
-      if (card.type === 'link' && card.icon) {
-        const img = new Image();
-        img.src = card.icon;
-        console.log(`預加載圖片: ${card.icon}`);
+      
+      function preloadShortcutImages() {
+        shortcutCards.forEach(card => {
+          if (card.type === 'link' && card.icon) {
+            const img = new Image();
+            img.src = card.icon;
+            console.log(`預加載圖片: ${card.icon}`);
+          }
+        });
       }
-    });
-  }
 
   document.addEventListener('DOMContentLoaded', async () => {
     // 預加載所有捷徑圖片
