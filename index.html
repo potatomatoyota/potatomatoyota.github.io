@@ -9,48 +9,8 @@
   <link rel="icon" href="img/Favicon.png" type="image/x-icon">
   <title>lastfm</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
-  <style>
-    @keyframes likeAnimation {
-      0% { transform: scale(0); opacity: 0; }
-      50% { transform: scale(1.2); opacity: 1; }
-      70% { transform: scale(0.9); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-   
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-   
-    .like-notification {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      background-color: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 20px 30px;
-      border-radius: 50px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      animation: likeAnimation 0.5s ease-out, fadeOut 0.5s ease-in 2s forwards;
-    }
-   
-    .like-icon {
-      font-size: 24px;
-      color: #FF3366;
-    }
-   
-    .like-text {
-      font-size: 18px;
-      font-weight: 500;
-    }
-  </style>
 
-  
+
   <script type="module">
     import { getSaturatedDominantColor, getSafeTextColor } from './js/color-utils.js';
   
@@ -88,12 +48,6 @@
     let touchStartY = 0;
     let revertTimeout = null;
 
-    // 首先在 <head> 標籤內加入 CSS 樣式 (放在現有 style.css 連結之後)
-    
-    
-    document.head.appendChild(styleElement);
-
-    // 更新 loveTrack 函數
     async function loveTrack(track) {
       const apiKey = '058072f329723fb093f8e5610cd566cf';
       const apiSecret = 'e2f9cb0c1f902fa71d44bbe6769a9d53';
@@ -109,12 +63,9 @@
       const artistName = track?.artist?.['#text']?.trim();
 
       if (!trackName || !artistName) {
-        showNotification('歌曲資訊不完整，無法按讚', 'error');
+        alert('歌曲資訊不完整，無法按讚');
         return;
       }
-
-      // 顯示處理中的通知
-      showNotification('處理中...', 'loading');
 
       // 需要傳送的參數（注意順序）
       const params = {
@@ -154,64 +105,17 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Last.fm 回傳錯誤:', errorText);
-          showNotification('按讚失敗', 'error');
+          alert('按讚失敗，請查看 console');
           return;
         }
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        showNotification('已按讚這首歌！', 'success');
+        alert('已按讚這首歌！');
       } catch (err) {
         console.error('網路錯誤:', err);
-        showNotification('按讚時發生錯誤', 'error');
+        alert('按讚時發生錯誤');
       }
-    }
-
-    // 新增通知顯示函數
-    function showNotification(message, type = 'success') {
-      // 移除任何現有的通知
-      const existingNotification = document.querySelector('.like-notification');
-      if (existingNotification) {
-        existingNotification.remove();
-      }
-      
-      // 創建新的通知元素
-      const notification = document.createElement('div');
-      notification.className = 'like-notification';
-      
-      // 根據類型設定圖標
-      let icon = '';
-      switch (type) {
-        case 'success':
-          icon = '❤️';
-          break;
-        case 'error':
-          icon = '❌';
-          break;
-        case 'loading':
-          icon = '⏳';
-          break;
-        default:
-          icon = '💬';
-      }
-      
-      notification.innerHTML = `
-        <span class="like-icon">${icon}</span>
-        <span class="like-text">${message}</span>
-      `;
-      
-      // 將通知添加到頁面
-      document.body.appendChild(notification);
-      
-      // 設定通知顏色與當前界面配色一致
-      if (currentFontColor) {
-        notification.querySelector('.like-text').style.color = currentFontColor;
-      }
-      
-      // 自動移除通知
-      setTimeout(() => {
-        notification.remove();
-      }, 2500);
     }
 
 
