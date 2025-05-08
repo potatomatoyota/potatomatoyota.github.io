@@ -49,8 +49,6 @@
     let revertTimeout = null;
 
     async function loveTrack(track) {
-      const apiKey = '058072f329723fb093f8e5610cd566cf';
-      const apiSecret = 'e2f9cb0c1f902fa71d44bbe6769a9d53';
       const sessionKey = localStorage.getItem('lastfm_session_key');
 
       if (!sessionKey) {
@@ -58,7 +56,6 @@
         return;
       }
 
-      // 確認 track name 和 artist name 存在
       const trackName = track?.name?.trim();
       const artistName = track?.artist?.['#text']?.trim();
 
@@ -67,42 +64,19 @@
         return;
       }
 
-      // 先顯示水波光效和愛心效果
       createWaveEffect();
 
-      // 需要傳送的參數（注意順序）
-      const params = {
-        method: 'track.love',
-        track: trackName,
-        artist: artistName,
-        api_key: apiKey,
-        sk: sessionKey,
-      };
-
-      // 建立 api_sig（所有參數按字母排序後接上 secret，再做 MD5）
-      const sortedKeys = Object.keys(params).sort();
-      let sigBase = '';
-      for (const key of sortedKeys) {
-        sigBase += key + params[key];
-      }
-      sigBase += apiSecret;
-
-      const api_sig = CryptoJS.MD5(sigBase).toString();
-
-      // 添加簽章與格式
-      params.api_sig = api_sig;
-      params.format = 'json';
-
-      // 使用 URL encoded 格式送出
-      const formBody = new URLSearchParams(params).toString();
-
       try {
-        const response = await fetch('https://ws.audioscrobbler.com/2.0/', {
+        const response = await fetch('https://love-track.potatomatoyota.workers.dev/', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json'
           },
-          body: formBody
+          body: JSON.stringify({
+            track: trackName,
+            artist: artistName,
+            sessionKey: sessionKey
+          })
         });
 
         if (!response.ok) {
@@ -113,7 +87,6 @@
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        // 不再使用 alert 顯示提示，改用視覺效果
       } catch (err) {
         console.error('網路錯誤:', err);
       }
