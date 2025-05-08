@@ -34,7 +34,7 @@
       <div class="artist-name">正在載入歌曲資訊</div>
     </div>
   </div>
-  
+  <div id="toast-container"></div>
   
   <script>
     let currentTrackId = null;
@@ -47,6 +47,20 @@
     let currentFontColor = '#ffffff';
     let touchStartY = 0;
     let revertTimeout = null;
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+
+      container.appendChild(toast);
+
+      // 自動移除
+      setTimeout(() => {
+        toast.remove();
+      }, 3000); // 顯示 3 秒
+    }
 
     async function loveTrack(track) {
       const apiKey = '058072f329723fb093f8e5610cd566cf';
@@ -105,16 +119,16 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Last.fm 回傳錯誤:', errorText);
-          alert('按讚失敗，請查看 console');
+          showToast('⚠️ 按讚失敗，請稍後再試');
           return;
         }
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        alert('已按讚這首歌！');
+        showToast('♥ 已按讚');
       } catch (err) {
         console.error('網路錯誤:', err);
-        alert('按讚時發生錯誤');
+        showToast('⚠️ 按讚失敗，請稍後再試');
       }
     }
 
@@ -720,4 +734,5 @@
   });
   </script>
 </body>
+
 </html>
