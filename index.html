@@ -335,7 +335,8 @@
     async function renderApp(songData, isFirstLoad = false) {
       if (!songData?.track) return;
 
-      const track = songData.track;
+      const track = Array.isArray(songData.track) ? songData.track[0] : songData.track;
+
       const isNowPlaying = track['@attr']?.nowplaying === 'true';
       
       window.currentTrackData = track;
@@ -357,20 +358,26 @@
         renderFull(track);
       }
     }
-
     async function getSongInfo() {
       try {
-        const res = await fetch('https://lastfmapi.potatomatoyota.workers.dev/'); 
+        const res = await fetch('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=potatomatoyota&api_key=244ed7c6297e19a27b7dd55161df8069&format=json&limit=1'); 
         if (!res.ok) throw new Error('Fetch failed');
         const data = await res.json();
-        return data;
+        
+        const trackArray = data?.recenttracks?.track;
+        if (Array.isArray(trackArray) && trackArray.length > 0) {
+          return { track: trackArray[0] }; 
+        } else {
+          throw new Error('No track data available');
+        }
       } catch (err) {
-        // 如果都沒有就顯示錯誤
+        console.error('取得歌曲資訊時發生錯誤:', err);
         const app = document.getElementById('app');
         app.innerHTML = `<div class="error-message">無法獲取歌曲資訊，請稍後再試。</div>`; 
         return null;
       }
     }
+
    
     const shortcutCards = [
       { type: 'lastfm' },
@@ -529,23 +536,29 @@
           currentCardIndex = 0; 
           
           
-          if (window.latestSongData) {
-            const trackData = window.latestSongData.track || window.latestSongData;
-            if (trackData) {
-              renderFull(trackData);
-            } else {
-              showLoadingState();
-            }
-          } else {
-            showLoadingState();
+          if (window.latestSongData?.track) {
+            renderFull(window.latestSongData.track);
             getSongInfo().then(song => {
-              if (song) {
+              if (song?.track) {
                 window.latestSongData = song;
-                const trackData = song.track || song;
-                renderFull(trackData);
+                if (currentCardIndex === 0) { 
+                  renderApp(song);
+                }
+              }
+            });
+          } else {
+            getSongInfo().then(song => {
+              if (song?.track) {
+                window.latestSongData = song;
+                if (currentCardIndex === 0) {
+                  renderFull(song.track);
+                }
+              } else {
+                showErrorCard('無法載入歌曲');
               }
             });
           }
+
         }, 3000); // 3秒後自動切換回 lastfm
       });
 
