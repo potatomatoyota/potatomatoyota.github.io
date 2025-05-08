@@ -63,15 +63,30 @@
     }
       
     function triggerRippleEffect() {
+      console.log('觸發水波效果'); // 添加調試訊息
+      
       const albumWrapper = document.querySelector('.album-wrapper');
-      if (!albumWrapper) return;
+      if (!albumWrapper) {
+        console.error('找不到 album-wrapper 元素');
+        return;
+      }
 
       // 建立水波元素
       const ripple = document.createElement('div');
       ripple.className = 'ripple-effect';
+      
+      // 確保任何舊的 ripple 被移除
+      const oldRipples = albumWrapper.querySelectorAll('.ripple-effect');
+      oldRipples.forEach(old => old.remove());
 
       // 插入到 album-wrapper 最上層
       albumWrapper.appendChild(ripple);
+      
+      // 強制重繪以確保動畫正確觸發
+      void ripple.offsetWidth;
+
+      // 顯示確認信息 (可選)
+      showToast('已按讚!');
 
       // 自動移除動畫元素
       setTimeout(() => {
@@ -731,8 +746,17 @@
     document.addEventListener('keydown', (event) => {
       if (event.code === 'Space' && !event.repeat && shortcutCards[currentCardIndex].type === 'lastfm') {
         event.preventDefault();
+        console.log('空格鍵被按下，當前卡片是 lastfm 類型');
+        
+        // 直接觸發水波效果，不管 API 請求結果如何
+        triggerRippleEffect();
+        
+        // 同時發送 last.fm API 請求
         if (window.currentTrackData) {
           loveTrack(window.currentTrackData);
+        } else {
+          console.warn('無當前曲目數據可供按讚');
+          showToast('⚠️ 無法按讚，無歌曲數據');
         }
       }
     });
