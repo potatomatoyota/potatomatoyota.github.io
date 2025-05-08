@@ -60,43 +60,66 @@
         return;
       }
 
+      // 確認 track name 和 artist name 存在
+      const trackName = track?.name?.trim();
+      const artistName = track?.artist?.['#text']?.trim();
+
+      if (!trackName || !artistName) {
+        alert('歌曲資訊不完整，無法按讚');
+        return;
+      }
+
+      // 需要傳送的參數（注意順序）
       const params = {
         method: 'track.love',
-        track: track.name,
-        artist: track.artist['#text'],
+        track: trackName,
+        artist: artistName,
         api_key: apiKey,
         sk: sessionKey,
-        format: 'json'
       };
 
-      const keys = Object.keys(params).sort();
-      let sig = '';
-      for (const key of keys) {
-        sig += key + params[key];
+      // 建立 api_sig（所有參數按字母排序後接上 secret，再做 MD5）
+      const sortedKeys = Object.keys(params).sort();
+      let sigBase = '';
+      for (const key of sortedKeys) {
+        sigBase += key + params[key];
       }
-      sig += apiSecret;
+      sigBase += apiSecret;
 
-      const md5 = (msg) => CryptoJS.MD5(msg).toString(); 
-      params.api_sig = md5(sig);
+      const api_sig = CryptoJS.MD5(sigBase).toString();
 
-      const formBody = new URLSearchParams(params);
+      // 添加簽章與格式
+      params.api_sig = api_sig;
+      params.format = 'json';
+
+      // 使用 URL encoded 格式送出
+      const formBody = new URLSearchParams(params).toString();
 
       try {
-        const res = await fetch('https://ws.audioscrobbler.com/2.0/', {
+        const response = await fetch('https://ws.audioscrobbler.com/2.0/', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          body: formBody.toString()
+          body: formBody
         });
 
-        const data = await res.json();
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Last.fm 回傳錯誤:', errorText);
+          alert('按讚失敗，請查看 console');
+          return;
+        }
+
+        const result = await response.json();
+        console.log('按讚成功:', result);
         alert('已按讚這首歌！');
       } catch (err) {
-        console.error('按讚失敗:', err);
+        console.error('網路錯誤:', err);
         alert('按讚時發生錯誤');
       }
     }
+
 
 
     const albumColorMap = {
