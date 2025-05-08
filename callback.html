@@ -1,49 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <title>正在登入...</title>
+  <meta charset="UTF-8">
+  <title>登入中...</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-<script>
-  const API_KEY = 'e67828607cdd2dc4843ebc2f341a4a6e';
-  const API_SECRET = 'e31c126a6b4eeb1f91d2cfd6d606d195';
-  const token = new URLSearchParams(window.location.search).get('token');
+  <p>正在登入 Last.fm，請稍候...</p>
+  <script>
+    const API_KEY = '你的API_KEY';
+    const API_SECRET = '你的API_SECRET';
 
-  if (token) {
-    const params = {
-      method: 'auth.getSession',
-      api_key: API_KEY,
-      token: token
-    };
+    const token = new URLSearchParams(window.location.search).get('token');
 
-    // 排序後加上 API_SECRET
-    const keys = Object.keys(params).sort();
-    let sig = '';
-    for (const key of keys) {
-      sig += key + params[key];
+    if (!token) {
+      alert('登入失敗，缺少 token');
+    } else {
+      const params = {
+        method: 'auth.getSession',
+        api_key: API_KEY,
+        token: token
+      };
+
+      const sortedKeys = Object.keys(params).sort();
+      let sig = '';
+      for (const key of sortedKeys) {
+        sig += key + params[key];
+      }
+      sig += API_SECRET;
+
+      const api_sig = CryptoJS.MD5(sig).toString();
+
+      fetch(`https://ws.audioscrobbler.com/2.0/?method=auth.getSession&api_key=${API_KEY}&token=${token}&api_sig=${api_sig}&format=json`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.session?.key) {
+            localStorage.setItem('lastfm_session_key', data.session.key);
+            alert('登入成功！你可以回去按讚了！');
+            window.location.href = '/'; // 回到你的主頁
+          } else {
+            alert('取得 session key 失敗：' + JSON.stringify(data));
+          }
+        }).catch(err => {
+          console.error('發生錯誤:', err);
+          alert('交換 session key 時失敗');
+        });
     }
-    sig += API_SECRET;
-    const api_sig = CryptoJS.MD5(sig).toString();
-
-    fetch(`https://ws.audioscrobbler.com/2.0/?method=auth.getSession&api_key=${API_KEY}&token=${token}&api_sig=${api_sig}&format=json`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.session?.key) {
-          localStorage.setItem('lastfm_session_key', data.session.key);
-          alert('登入成功！可以回到主頁使用讚功能');
-          window.location.href = '/'; // 回到你的主頁
-        } else {
-          alert('取得 session key 失敗');
-        }
-      }).catch(err => {
-        console.error('登入失敗:', err);
-        alert('登入發生錯誤');
-      });
-  } else {
-    alert('找不到 token');
-  }
-</script>
+  </script>
 </body>
 </html>
