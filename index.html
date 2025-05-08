@@ -48,7 +48,6 @@
     let touchStartY = 0;
     let revertTimeout = null;
 
-   // 替換原有的 loveTrack 函數
     async function loveTrack(track) {
       const apiKey = '058072f329723fb093f8e5610cd566cf';
       const apiSecret = 'e2f9cb0c1f902fa71d44bbe6769a9d53';
@@ -64,12 +63,12 @@
       const artistName = track?.artist?.['#text']?.trim();
 
       if (!trackName || !artistName) {
-        showNotification('歌曲資訊不完整，無法按讚', 'error');
+        console.error('歌曲資訊不完整，無法按讚');
         return;
       }
 
-      // 先顯示視覺效果，無論API是否成功
-      showLoveAnimation();
+      // 先顯示水波光效和愛心效果
+      createWaveEffect();
 
       // 需要傳送的參數（注意順序）
       const params = {
@@ -109,90 +108,48 @@
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Last.fm 回傳錯誤:', errorText);
-          showNotification('按讚失敗，請查看 console', 'error');
           return;
         }
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        // 不需要再次顯示動畫，因為已經在開始時顯示了
+        // 不再使用 alert 顯示提示，改用視覺效果
       } catch (err) {
         console.error('網路錯誤:', err);
-        showNotification('按讚時發生錯誤', 'error');
       }
     }
 
-    // 顯示愛心水波動畫效果
-    function showLoveAnimation() {
+    // 創建水波光效函數
+    function createWaveEffect() {
       const albumWrapper = document.querySelector('.album-wrapper');
       if (!albumWrapper) return;
       
-      // 添加水波紋效果
-      const ripple = document.createElement('div');
-      ripple.className = 'love-ripple';
-      albumWrapper.appendChild(ripple);
+      // 創建心形圖標
+      const heart = document.createElement('div');
+      heart.className = 'heart-icon';
+      heart.innerHTML = '❤️';
+      albumWrapper.appendChild(heart);
       
-      // 添加愛心圖標
-      const loveIcon = document.createElement('div');
-      loveIcon.className = 'love-icon';
-      loveIcon.innerHTML = '❤️';
-      albumWrapper.appendChild(loveIcon);
+      // 強制重繪
+      void heart.offsetWidth;
+      heart.classList.add('heart-animate');
       
-      // 設置動畫結束後移除元素
-      setTimeout(() => {
-        if (ripple.parentNode === albumWrapper) {
-          albumWrapper.removeChild(ripple);
-        }
-        if (loveIcon.parentNode === albumWrapper) {
-          albumWrapper.removeChild(loveIcon);
-        }
-      }, 1200);
-    }
-
-    // 顯示通知信息的函數（用於錯誤情況）
-    function showNotification(message, type = 'info') {
-      // 創建通知元素
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-      
-      // 添加到頁面
-      document.body.appendChild(notification);
-      
-      // 設置樣式
-      Object.assign(notification.style, {
-        position: 'fixed',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        padding: '12px 20px',
-        backgroundColor: type === 'error' ? 'rgba(220, 53, 69, 0.9)' : 'rgba(25, 135, 84, 0.9)',
-        color: 'white',
-        borderRadius: '4px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-        zIndex: '1000',
-        transition: 'opacity 0.3s, transform 0.3s',
-        opacity: '0',
-        transform: 'translateX(-50%) translateY(20px)'
-      });
-      
-      // 觸發入場動畫
-      setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(-50%) translateY(0)';
-      }, 10);
-      
-      // 3秒後自動移除
-      setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(-50%) translateY(20px)';
+      // 創建三個水波效果元素
+      for (let i = 0; i < 3; i++) {
+        const wave = document.createElement('div');
+        wave.className = 'wave-effect';
+        albumWrapper.appendChild(wave);
         
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 300);
-      }, 3000);
+        // 在動畫結束後移除元素
+        wave.addEventListener('animationend', () => {
+          wave.remove();
+        });
+      }
+      
+      // 在動畫結束後移除心形圖標
+      heart.addEventListener('animationend', () => {
+        heart.remove();
+      });
     }
 
 
