@@ -126,7 +126,7 @@ export function rgbToHsl(r, g, b) {
     const whiteRatio = whitePixels / totalPixels;
     const grayRatio = grayPixels / totalPixels;
 
-    console.log('whiteRatio:', whiteRatio, 'grayRatio:', grayRatio);
+   
 
     if (blackRatio > 0.8) return { r: 10, g: 10, b: 10, manual: true };
     if (whiteRatio > 0.8){ 
@@ -267,7 +267,7 @@ export function rgbToHsl(r, g, b) {
       
 
 
-      l = Math.min(l, 0.2); //控制目標亮度
+      //控制目標亮度
 
       const darker = hslToRgb(h, s, l);
       avgR = darker.r;

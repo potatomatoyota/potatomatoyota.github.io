@@ -5,31 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>傳訊息給我</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+    
     :root {
-      --bg-color: #f5f6fa;
-      --text-color: #333;
+      --primary: #5E81AC;
+      --primary-light: #81A1C1;
+      --primary-dark: #4C6A92;
+      --success: #A3BE8C;
+      --danger: #BF616A;
+      --bg-color: #F9FAFC;
+      --text-color: #2E3440;
       --card-bg: #ffffff;
-      --input-bg: #fff;
-      --input-border: #ccc;
-      --btn-bg: #2f80ed;
-      --btn-hover: #1c60c6;
-      --progress-bg: #e0e0e0;
-      --progress-fill: #4caf50;
+      --input-bg: #ECEFF4;
+      --input-border: #D8DEE9;
+      --btn-text: #ffffff;
+      --shadow: 0 10px 25px rgba(46, 52, 64, 0.12);
+      --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
+    
     [data-theme="dark"] {
-      --bg-color: #121212;
-      --text-color: #e0e0e0;
-      --card-bg: #1e1e1e;
-      --input-bg: #2a2a2a;
-      --input-border: #555;
-      --btn-bg: #4a75d1;
-      --btn-hover: #2e4e9f;
-      --progress-bg: #444;
-      --progress-fill: #4caf50;
+      --primary: #81A1C1;
+      --primary-light: #88C0D0;
+      --primary-dark: #5E81AC;
+      --success: #A3BE8C;
+      --danger: #BF616A;
+      --bg-color: #2E3440;
+      --text-color: #ECEFF4;
+      --card-bg: #3B4252;
+      --input-bg: #4C566A;
+      --input-border: #434C5E;
+      --btn-text: #ECEFF4;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
     }
+    
     * { box-sizing: border-box; }
+    
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: 'Noto Sans TC', sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
       display: flex;
@@ -38,193 +50,304 @@
       min-height: 100vh;
       margin: 0;
       padding: 20px 0;
+      transition: var(--transition);
+      line-height: 1.6;
     }
+    
     .container {
       background: var(--card-bg);
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 2.5rem;
+      border-radius: 18px;
+      box-shadow: var(--shadow);
       width: 90%;
-      max-width: 450px;
+      max-width: 480px;
       text-align: center;
       position: relative;
+      transition: var(--transition);
     }
+    
     .toggle {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 20px;
+      right: 20px;
       display: flex;
       align-items: center;
       cursor: pointer;
-      -webkit-user-select: none;
+      -webkit-user-select:user-select none;
       user-select: none;
-      
     }
+    
     .toggle input {
       display: none;
     }
+    
     .toggle-label {
-      width: 40px;
-      height: 20px;
-      background: #ccc;
-      border-radius: 10px;
+      width: 48px;
+      height: 24px;
+      background: var(--input-bg);
+      border-radius: 12px;
       position: relative;
-      transition: background 0.3s;
+      transition: var(--transition);
     }
-    [data-theme="dark"] .toggle-label {
-      background: #666;
-    }
+    
     .toggle-label::after {
       content: '';
-      width: 16px;
-      height: 16px;
-      background: #fff;
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
       border-radius: 50%;
       position: absolute;
       top: 2px;
       left: 2px;
-      transition: transform 0.3s;
+      transition: var(--transition);
     }
+    
     input:checked + .toggle-label::after {
-      transform: translateX(20px);
+      transform: translateX(24px);
     }
+    
     input:checked + .toggle-label {
-      background: #4a75d1;
+      background: var(--input-border);
     }
+    
     h2 {
       margin-top: 0;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      font-size: 1.75rem;
+      color: var(--primary);
     }
+    
     input[type="text"] {
       width: 100%;
-      padding: 12px 16px;
-      margin-bottom: 1rem;
+      padding: 14px 18px;
+      margin-bottom: 1.2rem;
       font-size: 1rem;
       border: 1px solid var(--input-border);
-      border-radius: 8px;
+      border-radius: 12px;
       background: var(--input-bg);
       color: var(--text-color);
+      transition: var(--transition);
+      outline: none;
     }
+    
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(94, 129, 172, 0.2);
+    }
+    
     .upload-btn {
       display: inline-block;
-      padding: 12px 20px;
+      padding: 14px 20px;
       font-size: 1rem;
-      background-color: var(--btn-bg);
-      color: white;
+      background-color: var(--primary);
+      color: var(--btn-text);
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       width: 100%;
-      transition: background-color 0.2s ease;
-      
-      margin-bottom: 0.5rem;
+      transition: var(--transition);
+      margin-bottom: 0.8rem;
       text-align: center;
+      font-weight: 500;
     }
+    
     .upload-btn:hover {
-      background-color: var(--btn-hover);
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
     }
+    
     .file-input {
       display: none;
     }
+    
     button {
-      padding: 12px 20px;
+      padding: 14px 20px;
       font-size: 1rem;
-      background-color: var(--btn-bg);
-      color: white;
+      background-color: var(--primary);
+      color: var(--btn-text);
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       width: 100%;
-      transition: background-color 0.2s ease;
-      margin-bottom: 0.5rem;
+      transition: var(--transition);
+      margin-bottom: 0.8rem;
+      font-weight: 500;
     }
+    
     button:hover {
-      background-color: var(--btn-hover);
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
     }
+    
     button:disabled {
-      background-color: #cccccc;
+      background-color: var(--input-border);
       cursor: not-allowed;
+      transform: none;
     }
+    
     .progress-container {
       width: 100%;
-      background-color: var(--progress-bg);
-      border-radius: 5px;
-      margin: 10px 0;
-      height: 8px;
+      background-color: var(--input-bg);
+      border-radius: 8px;
+      margin: 15px 0;
+      height: 10px;
       overflow: hidden;
       display: none;
     }
+    
     .progress-bar {
       width: 0%;
       height: 100%;
-      background-color: var(--progress-fill);
-      transition: width 0.1s;
+      background-color: var(--success);
+      transition: width 0.2s ease;
     }
+    
     .tab-container {
       display: flex;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--input-border);
+      margin-bottom: 25px;
+      border-bottom: 2px solid var(--input-border);
     }
+    
     .tab {
-      padding: 10px 20px;
+      padding: 12px 24px;
       cursor: pointer;
       flex: 1;
       text-align: center;
       border-bottom: 3px solid transparent;
-      transition: all 0.3s ease;
+      transition: var(--transition);
+      font-weight: 500;
     }
+    
     .tab.active {
-      border-bottom: 3px solid var(--btn-bg);
-      font-weight: bold;
+      border-bottom: 3px solid var(--primary);
+      color: var(--primary);
     }
+    
+    .tab:hover:not(.active) {
+      color: var(--primary-light);
+    }
+    
     .tab-content {
       display: none;
     }
+    
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease;
     }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
     .file-info {
       font-size: 0.9rem;
-      margin: 10px 0;
+      margin: 15px 0;
       text-align: left;
       word-break: break-all;
+      padding: 12px;
+      background: var(--input-bg);
+      border-radius: 10px;
+      line-height: 1.5;
     }
-    /* 拖放區域樣式 */
+    
     .drop-area {
       border: 2px dashed var(--input-border);
-      border-radius: 8px;
-      padding: 30px 20px;
+      border-radius: 12px;
+      padding: 35px 20px;
       text-align: center;
-      margin-bottom: 15px;
-      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      transition: var(--transition);
       background-color: var(--input-bg);
       color: var(--text-color);
     }
+    
     .drop-area.active {
-      border-color: var(--btn-bg);
-      background-color: rgba(47, 128, 237, 0.1);
+      border-color: var(--primary);
+      background-color: rgba(94, 129, 172, 0.1);
     }
+    
     .drop-area-text {
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-    .drop-area-icon {
-      font-size: 2rem;
-      margin-bottom: 10px;
-      color: var(--input-border);
-    }
-    .drop-area.active .drop-area-icon {
-      color: var(--btn-bg);
-    }
-    /* 新增署名區塊樣式 */
-    .name-input {
+      font-size: 1.1rem;
       margin-bottom: 12px;
     }
+    
+    .drop-area-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: var(--primary-light);
+    }
+    
+    .drop-area.active .drop-area-icon {
+      color: var(--primary);
+    }
+    
+    .name-input {
+      margin-bottom: 18px;
+    }
+    
     .name-label {
       display: block;
       text-align: left;
-      margin-bottom: 5px;
-      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    
+    #status {
+      padding: 10px;
+      border-radius: 8px;
+      transition: var(--transition);
+      font-weight: 500;
+    }
+    
+    #status.success {
+      background-color: rgba(163, 190, 140, 0.2);
+      color: var(--success);
+    }
+    
+    #status.error {
+      background-color: rgba(191, 97, 106, 0.2);
+      color: var(--danger);
+    }
+    
+    #preview {
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 200px;
+      object-fit: contain;
+    }
+    
+    /* 波浪動畫效果 */
+    @keyframes wave {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+    
+    .sending-animation {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+    
+    .sending-animation span {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: wave 1s infinite;
+    }
+    
+    .sending-animation span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .sending-animation span:nth-child(3) {
+      animation-delay: 0.4s;
     }
   </style>
 </head>
@@ -239,7 +362,7 @@
     
     <div class="tab-container">
       <div class="tab active" data-tab="text-tab">文字</div>
-      <div class="tab" data-tab="file-tab">檔案（傳圖或pdf）</div>
+      <div class="tab" data-tab="file-tab">檔案</div>
     </div>
     
     <!-- 署名輸入框 - 共用區塊 -->
@@ -261,25 +384,43 @@
         <div class="drop-area-text">或</div>
       </div>
       
-      <label for="imageInput" class="upload-btn" style="margin-bottom: 8px;">選擇圖片（傳圖片點這個）</label>
+      <label for="imageInput" class="upload-btn" style="margin-bottom: 12px;">
+        <svg style="width:20px; height:20px; margin-right:8px; vertical-align:middle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z" fill="currentColor"/>
+        </svg>
+        選擇圖片
+      </label>
       <input id="imageInput" class="file-input" type="file" accept="image/*" onchange="handleImageSelection()" />
-      <label for="fileInput" class="upload-btn">選擇檔案（如果要傳pdf點這個）</label>
+      
+      <label for="fileInput" class="upload-btn">
+        <svg style="width:20px; height:20px; margin-right:8px; vertical-align:middle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM9 13V19H7V13H9ZM15 15V19H17V15H15ZM11 11V19H13V11H11Z" fill="currentColor"/>
+        </svg>
+        選擇文件 (PDF等)
+      </label>
       <input id="fileInput" class="file-input" type="file" onchange="previewFile()" />
       
-      <div class="file-info" id="fileInfo"></div>
-      <img id="preview" style="max-width: 100%; margin: 10px 0; display: none; border-radius: 8px;" />
+      <div class="file-info" id="fileInfo" style="display:none;"></div>
+      <img id="preview" style="max-width: 100%; margin: 15px 0; display: none;" />
       
       <div class="progress-container" id="progressContainer">
         <div class="progress-bar" id="progressBar"></div>
       </div>
       
-      <button id="sendFileBtn" onclick="sendFile()">送出（按這個就發給我）</button>
+      <button id="sendFileBtn" onclick="sendFile()">
+        <svg style="width:20px; height:20px; margin-right:8px; vertical-align:middle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
+        </svg>
+        送出檔案
+      </button>
     </div>
     
-    <div id="status" style="margin-top: 15px; font-size: 0.9rem;"></div>
+    <div id="status" style="margin-top: 20px; font-size: 1rem;"></div>
   </div>
   
   <script>
+    // 保留原有的 JavaScript 代码...
+    
     // API 端點基礎 URL
     const API_BASE_URL = 'https://telegrambotmessage.potatomatoyota.workers.dev';
     
@@ -325,11 +466,19 @@
       }
     });
     
-    // 顯示狀態訊息
+    // 改進的狀態顯示
     function showStatus(msg, success = true) {
       const status = document.getElementById("status");
-      status.style.color = success ? "green" : "red";
+      status.className = success ? "success" : "error";
       status.innerText = msg;
+      
+      // 自動隱藏成功消息
+      if (success) {
+        setTimeout(() => {
+          status.className = "";
+          status.innerText = "";
+        }, 4000);
+      }
     }
     
     // 設置進度條
@@ -365,7 +514,8 @@
       const fullMessage = senderPrefix ? `${senderPrefix} ${msg}` : msg;
   
       btn.disabled = true;
-      btn.innerText = "傳送中...";
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<div class="sending-animation">傳送中<span></span><span></span><span></span></div>`;
   
       try {
         const res = await fetch(`${API_BASE_URL}/sendText`, {
@@ -375,7 +525,7 @@
         });
         const data = await res.json();
         if (data.ok) {
-          showStatus("文字訊息已送出！");
+          showStatus("訊息已成功送出！", true);
           msgEl.value = '';
         } else {
           showStatus("發送失敗：" + (data.description || data.error || JSON.stringify(data)), false);
@@ -385,9 +535,10 @@
       }
   
       btn.disabled = false;
-      btn.innerText = "送出文字";
+      btn.innerHTML = originalText;
     }
     
+    // 其餘 JavaScript 函數保持原樣...
     function handleImageSelection() {
       const imageInput = document.getElementById("imageInput");
       const fileInput = document.getElementById("fileInput");
@@ -413,7 +564,7 @@
       
       if (!file) {
         preview.style.display = "none";
-        fileInfo.innerHTML = "";
+        fileInfo.style.display = "none";
         return;
       }
       
@@ -424,6 +575,7 @@
         <strong>檔案類型:</strong> ${file.type || '未知'}<br/>
         <strong>檔案大小:</strong> ${sizeMB} MB
       `;
+      fileInfo.style.display = "block";
       
       // 如果是圖片，顯示預覽
       if (file.type.startsWith('image/')) {
@@ -459,7 +611,8 @@
       if (!file) return showStatus("請選擇檔案", false);
       
       btn.disabled = true;
-      btn.innerText = "傳送中...";
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<div class="sending-animation">傳送中<span></span><span></span><span></span></div>`;
       showProgressBar(true);
       
       try {
@@ -482,10 +635,10 @@
           
           const data = await res.json();
           if (data.ok) {
-            showStatus("檔案已送出！");
+            showStatus("檔案已成功送出！", true);
             fileInput.value = '';
             document.getElementById("preview").style.display = "none";
-            document.getElementById("fileInfo").innerHTML = "";
+            document.getElementById("fileInfo").style.display = "none";
           } else {
             throw new Error(data.description || data.error || JSON.stringify(data));
           }
@@ -499,12 +652,12 @@
       
       showProgressBar(false);
       btn.disabled = false;
-      btn.innerText = "送出（按這個就發給我）";
+      btn.innerHTML = originalText;
     }
     
     // 分片上傳大檔案
     async function chunkedUpload(file, endpoint, senderPrefix) {
-      const chunkSize = 4* 1024 * 1024; // 4MB 每片
+      const chunkSize = 4 * 1024 * 1024; // 4MB 每片
       const totalChunks = Math.ceil(file.size / chunkSize);
       const fileId = Date.now().toString() + '-' + Math.random().toString(36).substr(2, 9); // 生成唯一的檔案ID
       
@@ -526,7 +679,7 @@
         
         const percent = Math.round((chunkIndex + 1) / totalChunks * 100);
         setProgressBar(percent);
-        showStatus(`上傳進度: ${percent}%`);
+        showStatus(`上傳進度: ${percent}%`, true);
         
         try {
           const response = await fetch(`${API_BASE_URL}/uploadChunk`, {
@@ -556,10 +709,10 @@
             
             const completeData = await completeRes.json();
             if (completeData.ok) {
-              showStatus("檔案已上傳並發送！");
+              showStatus("檔案已成功上傳並發送！", true);
               document.getElementById("fileInput").value = '';
               document.getElementById("preview").style.display = "none";
-              document.getElementById("fileInfo").innerHTML = "";
+              document.getElementById("fileInfo").style.display = "none";
             } else {
               throw new Error(completeData.description || completeData.error || "完成上傳失敗");
             }
@@ -570,7 +723,7 @@
       }
     }
     
-    // 設置拖放功能
+    // 拖放功能
     const dropArea = document.getElementById('dropArea');
     
     // 防止瀏覽器預設行為
@@ -627,10 +780,9 @@
         }
         
         // 顯示檔案已拖放的狀態
-        showStatus(`已選擇檔案: ${file.name}`);
+        showStatus(`已選擇檔案: ${file.name}`, true);
       }
     }
   </script>
 </body>
 </html>
-
