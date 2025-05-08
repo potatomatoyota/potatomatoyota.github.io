@@ -360,7 +360,7 @@
     }
     async function getSongInfo() {
       try {
-        const res = await fetch('http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=potatomatoyota&api_key=244ed7c6297e19a27b7dd55161df8069&format=json&limit=1'); 
+        const res = await fetch('https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=potatomatoyota&api_key=244ed7c6297e19a27b7dd55161df8069&format=json&limit=1'); 
         if (!res.ok) throw new Error('Fetch failed');
         const data = await res.json();
         
