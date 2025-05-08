@@ -61,6 +61,23 @@
         toast.remove();
       }, 3000); // 顯示 3 秒
     }
+    
+    function triggerRippleEffect() {
+      const albumWrapper = document.querySelector('.album-wrapper');
+      if (!albumWrapper) return;
+
+      // 建立水波元素
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple-effect';
+
+      // 插入到 album-wrapper 最上層
+      albumWrapper.appendChild(ripple);
+
+      // 自動移除動畫元素
+      setTimeout(() => {
+        ripple.remove();
+      }, 1000);
+    }
 
     async function loveTrack(track) {
       const apiKey = '058072f329723fb093f8e5610cd566cf';
@@ -125,7 +142,7 @@
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        showToast('♥ 已按讚');
+        triggerRippleEffect()
       } catch (err) {
         console.error('網路錯誤:', err);
         showToast('⚠️ 按讚失敗，請稍後再試');
