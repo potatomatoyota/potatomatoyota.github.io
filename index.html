@@ -18,6 +18,8 @@
     window.getSafeTextColor = getSafeTextColor;
   </script>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 </head>
 <body>
   <div class="bg-transition" id="bgTransition"></div>
@@ -32,6 +34,9 @@
       <div class="artist-name">正在載入歌曲資訊</div>
     </div>
   </div>
+  <a href="https://www.last.fm/api/auth/?api_key=244ed7c6297e19a27b7dd55161df8069&cb=https://http://127.0.0.1:5501/callback.html">
+    登入 Last.fm
+  </a>
   
   <script>
     let currentTrackId = null;
@@ -45,6 +50,53 @@
     let touchStartY = 0;
     let revertTimeout = null;
 
+    async function loveTrack(track) {
+      const apiKey = '244ed7c6297e19a27b7dd55161df8069';
+      const apiSecret = '3694f958b03509a51f7d2957b27ae75c';
+      const sessionKey = localStorage.getItem('lastfm_session_key');
+
+      if (!sessionKey) {
+        alert('請先登入 Last.fm 才能按讚！');
+        return;
+      }
+
+      const params = {
+        method: 'track.love',
+        track: track.name,
+        artist: track.artist['#text'],
+        api_key: apiKey,
+        sk: sessionKey,
+        format: 'json'
+      };
+
+      const keys = Object.keys(params).sort();
+      let sig = '';
+      for (const key of keys) {
+        sig += key + params[key];
+      }
+      sig += apiSecret;
+
+      const md5 = (msg) => CryptoJS.MD5(msg).toString(); 
+      params.api_sig = md5(sig);
+
+      const formBody = new URLSearchParams(params);
+
+      try {
+        const res = await fetch('https://ws.audioscrobbler.com/2.0/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formBody.toString()
+        });
+
+        const data = await res.json();
+        alert('已按讚這首歌！');
+      } catch (err) {
+        console.error('按讚失敗:', err);
+        alert('按讚時發生錯誤');
+      }
+    }
 
 
     const albumColorMap = {
@@ -623,6 +675,15 @@
     document.addEventListener('wheel', handleWheel);
     document.addEventListener('touchstart', handleTouchStart);
     document.addEventListener('touchend', handleTouchEnd);
+    
+    document.addEventListener('keydown', (event) => {
+      if (event.code === 'Space' && !event.repeat && shortcutCards[currentCardIndex].type === 'lastfm') {
+        event.preventDefault();
+        if (window.currentTrackData) {
+          loveTrack(window.currentTrackData);
+        }
+      }
+    });
 
     // 定時更新
     setInterval(async () => {
