@@ -86,6 +86,7 @@
 
         const result = await response.json();
         console.log('按讚成功:', result);
+        showToast('已按讚！');
       } catch (err) {
         console.error('網路錯誤:', err);
       }
