@@ -25,7 +25,6 @@
   <div class="bg-transition" id="bgTransition"></div>
   <div class="container fade" id="app">
     <div class="album-wrapper">
-      <div class="ripple-effect"></div>
       <img src="img/default-cover.webp" alt="default cover" class="album-cover">
       
     </div>
@@ -87,13 +86,6 @@
 
         const result = await response.json();
         console.log('按讚成功:', result);
-        const ripple = document.querySelector('.ripple-effect');
-        if (ripple) {
-          ripple.classList.remove('ripple-active'); // 重設動畫
-          void ripple.offsetWidth; // 強制重繪
-          ripple.classList.add('ripple-active');
-        }
-
       } catch (err) {
         console.error('網路錯誤:', err);
       }
@@ -107,7 +99,7 @@
 
       // 格式: '專輯名稱-藝術家名稱': { background: 'rgba(r,g,b)', text: 'rgba(r,g,b)' }
       'エルマ-ヨルシカ': { background: 'rgb(50, 70, 50)', text: 'rgb(168, 192, 168)' },
-      'predawn-Lop Abuse On Somebody':{ background: 'rgb(27, 65, 106)', text: 'rgb(55, 134, 220)' },
+      'predawn-Lop Abuse On Somebody':{ background: 'rgb(27, 65, 106)', text: 'rgb(36, 88, 144)' },
       // 可以按照這個格式添加更多專輯
     };
 
