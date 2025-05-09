@@ -694,6 +694,20 @@
       }
     }, 10000);
   });
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2000);
+  }
+
   </script>
+  <div id="toast" class="toast">已按讚！</div>
+
 </body>
 </html>
