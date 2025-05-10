@@ -694,10 +694,29 @@
         }
       }
     }, 10000);
-  });
-  function showToast(message) {
+  });  function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
+
+    // 獲取當前背景色
+    const bodyBgColor = getComputedStyle(document.body).backgroundColor;
+    const rgb = bodyBgColor.match(/\d+/g);
+    
+    if (rgb) {
+      const [r, g, b] = rgb.map(Number);
+      
+      // 計算亮度
+      const brightness = (r + g + b) / 3;
+      
+      // 設置 toast 背景色為當前背景色的半透明版本
+      toast.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+      
+      // 如果背景較暗，文字用白色；如果背景較亮，文字用黑色
+      toast.style.color = brightness < 128 ? '#ffffff' : '#000000';
+      
+      // 添加邊框以增加可見度
+      toast.style.border = `1px solid rgba(${r}, ${g}, ${b}, 0.8)`;
+    }
 
     toast.textContent = message;
     toast.classList.add('show');
