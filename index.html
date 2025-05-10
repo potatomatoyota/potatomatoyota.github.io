@@ -84,8 +84,7 @@
           return;
         }        const result = await response.json();
         console.log('按讚成功:', result);
-        
-        // 在專輯封面位置創建波紋效果
+          // 在專輯封面位置創建波紋效果
         const albumWrapper = document.querySelector('.album-wrapper');
         if (albumWrapper) {
           const ripple = document.createElement('div');
@@ -96,10 +95,23 @@
           const rgb = bodyBgColor.match(/\d+/g);
           if (rgb) {
             const [r, g, b] = rgb.map(Number);
-            ripple.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+            const brightness = (r + g + b) / 3;
+            // 如果背景較暗，使用更亮的波紋
+            if (brightness < 128) {
+              ripple.style.backgroundColor = `rgba(${Math.min(r + 50, 255)}, ${Math.min(g + 50, 255)}, ${Math.min(b + 50, 255)}, 0.3)`;
+            } else {
+              // 如果背景較亮，使用更暗的波紋
+              ripple.style.backgroundColor = `rgba(${Math.max(r - 50, 0)}, ${Math.max(g - 50, 0)}, ${Math.max(b - 50, 0)}, 0.3)`;
+            }
           }
           
-          albumWrapper.appendChild(ripple);
+          // 確保在專輯封面之前插入波紋
+          const albumCover = albumWrapper.querySelector('.album-cover');
+          if (albumCover) {
+            albumWrapper.insertBefore(ripple, albumCover);
+          } else {
+            albumWrapper.appendChild(ripple);
+          }
           
           // 動畫結束後移除波紋元素
           ripple.addEventListener('animationend', () => {

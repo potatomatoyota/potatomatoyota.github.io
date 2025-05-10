@@ -226,6 +226,8 @@
   pointer-events: none;
   animation: rippleEffect 1s ease-out forwards;
   z-index: -1;
+  background-color: rgba(255, 255, 255, 0.3);
+  mix-blend-mode: overlay;
 }
 
 @keyframes rippleEffect {
