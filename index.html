@@ -82,10 +82,31 @@
           const errorText = await response.text();
           console.error('Last.fm 回傳錯誤:', errorText);
           return;
-        }
-
-        const result = await response.json();
+        }        const result = await response.json();
         console.log('按讚成功:', result);
+        
+        // 在專輯封面位置創建波紋效果
+        const albumWrapper = document.querySelector('.album-wrapper');
+        if (albumWrapper) {
+          const ripple = document.createElement('div');
+          ripple.className = 'ripple';
+          
+          // 使用當前背景色設置波紋顏色
+          const bodyBgColor = getComputedStyle(document.body).backgroundColor;
+          const rgb = bodyBgColor.match(/\d+/g);
+          if (rgb) {
+            const [r, g, b] = rgb.map(Number);
+            ripple.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+          }
+          
+          albumWrapper.appendChild(ripple);
+          
+          // 動畫結束後移除波紋元素
+          ripple.addEventListener('animationend', () => {
+            ripple.remove();
+          });
+        }
+        
         showToast('已按讚！');
       } catch (err) {
         console.error('網路錯誤:', err);
@@ -694,29 +715,10 @@
         }
       }
     }, 10000);
-  });  function showToast(message) {
+  });
+  function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
-
-    // 獲取當前背景色
-    const bodyBgColor = getComputedStyle(document.body).backgroundColor;
-    const rgb = bodyBgColor.match(/\d+/g);
-    
-    if (rgb) {
-      const [r, g, b] = rgb.map(Number);
-      
-      // 計算亮度
-      const brightness = (r + g + b) / 3;
-      
-      // 設置 toast 背景色為當前背景色的半透明版本
-      toast.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
-      
-      // 如果背景較暗，文字用白色；如果背景較亮，文字用黑色
-      toast.style.color = brightness < 128 ? '#ffffff' : '#000000';
-      
-      // 添加邊框以增加可見度
-      toast.style.border = `1px solid rgba(${r}, ${g}, ${b}, 0.8)`;
-    }
 
     toast.textContent = message;
     toast.classList.add('show');
