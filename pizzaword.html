@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pleasegivemecreditsthankyouverymuch</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">我根本不會英文</h1>
+            <p class="game-subtitle">我在困難難度獲得了1分的優秀成績，你也來試試吧</p>
+        </div>
+
+        <!-- 設定畫面 -->
+        <div id="setup-screen" class="screen active">
+            <div class="input-group">
+                <label class="input-label" for="api-key">🔑 Gemini API 金鑰</label>
+                <input type="password" id="api-key" class="input-field" placeholder="請輸入您的 API 金鑰">
+                <p class="api-note">
+                    <a href="https://aistudio.google.com/" target="_blank" rel="noopener">點此獲取免費金鑰</a> • 也可以用我的金鑰: <code>AIzaSyAgnGvfIYrJA4M4VHVk6fVud6mjQWR8Lm8</code>
+                </p>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">選擇難度</label>
+                <div class="difficulty-selector">
+                    <button class="difficulty-btn" data-difficulty="easy">簡單</button>
+                    <button class="difficulty-btn active" data-difficulty="medium">中等</button>
+                    <button class="difficulty-btn" data-difficulty="hard">困難</button>
+                </div>
+            </div>
+            
+            <button id="start-game-btn" class="btn-primary">開始遊戲</button>
+        </div>
+
+        <!-- 遊戲畫面 -->
+        <div id="game-screen" class="screen">
+            <div class="game-stats">
+                <div class="stat-badge score-badge">
+                    <span>🏆</span>
+                    <span id="score">分數: 0</span>
+                </div>
+                <div id="timer" class="stat-badge timer-badge">
+                    <span>⏱️</span>
+                    <span id="timer-text" class="timer-text">30</span>
+                </div>
+            </div>
+            
+            <div class="puzzle-area">
+                <div id="puzzle-word" class="puzzle-word">正在載入<span class="loading-dots"></span></div>
+                <p class="puzzle-hint">填入缺失的字母組成完整單字</p>
+            </div>
+            
+            <input type="text" id="answer-input" class="answer-input" placeholder="輸入完整單字..." autocomplete="off" disabled>
+            <div id="feedback" class="feedback"></div>
+        </div>
+
+        <!-- 遊戲結束畫面 -->
+        <div id="game-over-screen" class="screen">
+            <h2>遊戲結束</h2>
+            <div class="final-score">
+                你的最終分數是:
+                <span id="final-score" class="score-number">0</span>
+            </div>
+            <button id="restart-btn" class="btn-primary">重新挑戰</button>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
