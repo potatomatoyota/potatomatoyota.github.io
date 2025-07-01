@@ -1,83 +1,61 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>語義搜尋測試</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>現在幾點</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f5f5f5;
+      margin: 0;
+      height: 100vh;
+      background: #f0f0f0;
+      position: relative;
+      font-family: sans-serif;
     }
-    h1 {
-      color: #333;
+
+    .arrow {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      font-size: 160px;
     }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
+
+
+    
+    .arrow {
+      right: 50px;
+      bottom: 50px;
+      transform: rotate(45deg);
     }
-    button {
-      margin-left: 10px;
+
+    .center-text {
+      font-size: 200px;
+      font-weight: bold;
+      text-align: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
-    #results {
-      margin-top: 20px;
-    }
-    .result-item {
-      background: white;
-      border-radius: 8px;
-      padding: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+
+  @media (max-width: 768px) {
+      .center-text {
+        font-size: 80px;
+      }
+      .arrow {
+        top: 40px;
+        bottom: 30px;
+        left: 0px;
+        transform: rotate(-120deg);
+        font-size: 100px;
+        width: 100px;
+        height: 100px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>語義搜尋測試介面</h1>
-  <input type="text" id="queryInput" placeholder="輸入查詢..." />
-  <button onclick="search()">搜尋</button>
-
-  <div id="results"></div>
-
-  <script>
-    async function search() {
-      const query = document.getElementById("queryInput").value;
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = "搜尋中...";
-
-      try {
-        const response = await fetch("https://potatomatoyota-spongebobapi.hf.space/search", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            query: query,
-            top_k: 5
-          })
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`錯誤 ${response.status}：${errorText}`);
-        }
-
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-          resultsDiv.innerHTML = data.results.map((item, idx) => `
-            <div class="result-item">
-              <strong>第 ${idx + 1} 筆：</strong> ${item}<br/>
-              <em>相似度分數：${data.scores[idx].toFixed(4)}</em>
-            </div>
-          `).join('');
-        } else {
-          resultsDiv.innerHTML = "找不到結果。";
-        }
-      } catch (err) {
-        resultsDiv.innerHTML = `<span style="color: red;">搜尋失敗：${err.message}</span>`;
-      }
-    }
-  </script>
+  <div class="center-text">現在時間</div>
+  <div class="arrow">➤</div>
 </body>
 </html>
